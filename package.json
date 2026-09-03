@@ -31,6 +31,7 @@
     "test": "vitest run",
     "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build": "pnpm -r run build"
   }
 }

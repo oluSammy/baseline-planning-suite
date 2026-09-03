@@ -32,8 +32,8 @@ export default tseslint.config(
       globals: { ...globals.browser, ...globals.node },
     },
     plugins: { "import-x": importX },
+    files: ["apps/*/src/**/*.{ts,tsx}", "packages/*/src/**/*.{ts,tsx}"],
     rules: {
-      "@typescript-eslint/no-explicit-any": "error",
       "import-x/no-relative-packages": "error",
     },
   },
