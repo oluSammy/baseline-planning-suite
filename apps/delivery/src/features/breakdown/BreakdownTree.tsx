@@ -1,4 +1,4 @@
-import type { BreakdownItemId, ProjectId, TreeNode } from "@baseline/domain";
+import { MAX_TREE_DEPTH, type BreakdownItemId, type ProjectId, type TreeNode } from "@baseline/domain";
 import { useState } from "react";
 import { itemAdded, itemDeleted, itemMoved, itemRenamed } from "../../store/breakdownItemsSlice";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
@@ -47,7 +47,7 @@ function TreeItem({ node, projectId }: { readonly node: TreeNode; readonly proje
   const dispatch = useAppDispatch();
   const targets = useAppSelector((state) => selectMoveTargets(state, node.item.id));
   const [mode, setMode] = useState<"view" | "rename" | "add">("view");
-  const canHaveChildren = node.depth < 3;
+  const canHaveChildren = node.depth < MAX_TREE_DEPTH;
 
   return (
     <li>

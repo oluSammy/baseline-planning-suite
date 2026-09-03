@@ -1,9 +1,8 @@
-import { buildTree, type ProjectId } from "@baseline/domain";
+import { buildTree, type ProjectId, canMove, type BreakdownItemId  } from "@baseline/domain";
 import { createSelector } from "@reduxjs/toolkit";
 import { breakdownItemsAdapter } from "./breakdownItemsSlice";
 import type { RootState } from "./index";
 import { projectsAdapter } from "./projectsSlice";
-import { canMove, type BreakdownItemId } from "@baseline/domain";
 
 const selectItemIdArg = (_state: RootState, itemId: BreakdownItemId) => itemId;
 
