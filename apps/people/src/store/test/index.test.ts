@@ -1,7 +1,7 @@
 import { loadSeed } from "@baseline/fixtures";
 import { describe, expect, it } from "vitest";
 import { createPeopleStore, resetToSeed, stateFromSeed, type RootState } from "../index";
-import { memoryAdapter } from "../persistence";
+import { memoryAdapter } from "@baseline/persistence";
 
 describe("people store persistence", () => {
   const seed = loadSeed();

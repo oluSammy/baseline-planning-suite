@@ -1,4 +1,5 @@
 import type { SeedData } from "@baseline/fixtures";
+import type { PersistenceAdapter } from "@baseline/persistence";
 import {
   combineReducers,
   configureStore,
@@ -7,7 +8,6 @@ import {
   type UnknownAction,
 } from "@reduxjs/toolkit";
 import { employeesAdapter, employeesReducer } from "./employeesSlice";
-import type { PersistenceAdapter } from "./persistence";
 import { rateRecordsAdapter, rateRecordsReducer } from "./rateRecordsSlice";
 
 const sliceReducer = combineReducers({

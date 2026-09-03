@@ -65,12 +65,18 @@ importers:
       '@baseline/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@reduxjs/toolkit':
+        specifier: ^2.12.0
+        version: 2.12.0(react-redux@9.3.0(@types/react@19.2.18)(react@19.2.8)(redux@5.0.1))(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
       react-dom:
         specifier: ^19.2.8
         version: 19.2.8(react@19.2.8)
+      react-redux:
+        specifier: ^9.3.0
+        version: 9.3.0(@types/react@19.2.18)(react@19.2.8)(redux@5.0.1)
     devDependencies:
       '@types/react':
         specifier: ^19.2.18
@@ -90,6 +96,9 @@ importers:
       '@baseline/fixtures':
         specifier: workspace:*
         version: link:../../packages/fixtures
+      '@baseline/persistence':
+        specifier: workspace:*
+        version: link:../../packages/persistence
       '@reduxjs/toolkit':
         specifier: ^2.12.0
         version: 2.12.0(react-redux@9.3.0(@types/react@19.2.18)(react@19.2.8)(redux@5.0.1))(react@19.2.8)
@@ -141,6 +150,8 @@ importers:
       '@baseline/domain':
         specifier: workspace:*
         version: link:../domain
+
+  packages/persistence: {}
 
 packages:
 

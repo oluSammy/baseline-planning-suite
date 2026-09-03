@@ -10,6 +10,7 @@ COPY apps/delivery/package.json apps/delivery/
 COPY packages/domain/package.json packages/domain/
 COPY packages/contracts/package.json packages/contracts/
 COPY packages/fixtures/package.json packages/fixtures/
+COPY packages/persistence/package.json packages/persistence/
 RUN pnpm install --frozen-lockfile
 
 COPY . .

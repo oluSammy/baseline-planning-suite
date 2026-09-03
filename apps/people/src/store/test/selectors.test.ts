@@ -1,8 +1,8 @@
 import { loadSeed } from "@baseline/fixtures";
+import { memoryAdapter } from "@baseline/persistence";
 import { describe, expect, it } from "vitest";
 import { createPeopleStore } from "../index";
 import { selectAllEmployees, selectEmployeesMatching } from "../selectors";
-import { memoryAdapter } from "../persistence";
 
 describe("people selectors", () => {
   const state = createPeopleStore({ seed: loadSeed(), persistence: memoryAdapter() }).getState();
