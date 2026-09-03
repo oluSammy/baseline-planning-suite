@@ -1,43 +1,14 @@
-import path from "node:path";
-import HtmlWebpackPlugin from "html-webpack-plugin";
+import { createAppConfig } from "../../tooling/webpack.app.mjs";
+import pkg from "./package.json" with { type: "json" };
 
-export default (_env, argv) => {
-  const isProduction = argv.mode === "production";
-
-  return {
-    mode: isProduction ? "production" : "development",
-    entry: "./src/index.ts",
-    output: {
-      path: path.resolve(import.meta.dirname, "dist"),
-      publicPath: "auto",
-      clean: true,
+export default (_env, argv) =>
+  createAppConfig({
+    name: "people",
+    dirname: import.meta.dirname,
+    port: 8081,
+    mode: argv.mode,
+    dependencies: pkg.dependencies,
+    exposes: {
+      "./mount": "./src/mount.tsx",
     },
-    resolve: {
-      extensions: [".tsx", ".ts", ".js"],
-    },
-    module: {
-      rules: [
-        {
-          test: /\.tsx?$/,
-          exclude: /node_modules/,
-          use: {
-            loader: "swc-loader",
-            options: {
-              jsc: {
-                parser: { syntax: "typescript", tsx: true },
-                transform: { react: { runtime: "automatic" } },
-              },
-            },
-          },
-        },
-      ],
-    },
-    plugins: [new HtmlWebpackPlugin({ template: "./public/index.html" })],
-    devServer: {
-      port: 8081,
-      historyApiFallback: true,
-      headers: { "Access-Control-Allow-Origin": "*" },
-    },
-    devtool: isProduction ? "source-map" : "eval-source-map",
-  };
-};
+  });

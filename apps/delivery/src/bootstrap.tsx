@@ -1,9 +1,9 @@
-import { createRoot } from "react-dom/client";
-import { App } from "./App";
+import { mount } from "./mount";
 
 const container = document.getElementById("root");
+
 if (!container) {
-  throw new Error("People: #root element not found");
+  throw new Error("Delivery: ##root element not found");
 }
 
-createRoot(container).render(<App />);
+mount(container);
