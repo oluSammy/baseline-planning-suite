@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadSeed } from "./index";
+import { loadSeed } from "../index";
 
 describe("seed fixtures", () => {
   const seed = loadSeed();

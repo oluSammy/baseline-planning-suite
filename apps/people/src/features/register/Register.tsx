@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useAppSelector } from "../../store/hooks";
-import { selectEmployeesMatching } from "../../store/selectors";
+import { selectAllEmployees, selectEmployeesMatching } from "../../store/selectors";
 
 export function Register() {
   const [query, setQuery] = useState("");
   const employees = useAppSelector((state) => selectEmployeesMatching(state, query));
+  const total = useAppSelector(selectAllEmployees).length;
 
   return (
     <section aria-labelledby="register-heading">
@@ -18,7 +19,7 @@ export function Register() {
           placeholder="Name or role"
         />
       </label>
-      <p>{employees.length} of 60</p>
+      <p>{employees.length} of {total}</p>
       <table>
         <thead>
           <tr>
