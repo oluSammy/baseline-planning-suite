@@ -1,6 +1,6 @@
 import { ModuleFederationPlugin } from "@module-federation/enhanced/webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
-import path from 'node:path'
+import path from "node:path";
 
 export function createAppConfig({
   name,
