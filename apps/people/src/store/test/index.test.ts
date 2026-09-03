@@ -14,13 +14,17 @@ describe("people store persistence", () => {
   it("prefers saved state over the seed", () => {
     const saved: RootState = {
       employees: { ids: [], entities: {} },
+      rateRecords: { ids: [], entities: {} },
     };
     const store = createPeopleStore({ seed, persistence: memoryAdapter(saved) });
     expect(store.getState().employees.ids).toHaveLength(0);
   });
 
   it("writes through after every action and reset returns the seed", () => {
-    const adapter = memoryAdapter<RootState>({ employees: { ids: [], entities: {} } });
+    const adapter = memoryAdapter<RootState>({
+      employees: { ids: [], entities: {} },
+      rateRecords: { ids: [], entities: {} },
+    });
     const store = createPeopleStore({ seed, persistence: adapter });
 
     store.dispatch(resetToSeed());

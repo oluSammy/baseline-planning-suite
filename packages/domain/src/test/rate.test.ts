@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { hourlyCost, isoDate, type EmployeeId, type RateRecord, type RateRecordId } from "../model";
-import { rateHistory } from "../rates";
+import { rateHistory, findRateConflict } from "../rates";
 
 const employeeId = "emp-001" as EmployeeId;
 
@@ -31,5 +31,23 @@ describe("rateHistory", () => {
 
   it("handles no records", () => {
     expect(rateHistory([])).toEqual([]);
+  });
+});
+
+describe("findRateConflict", () => {
+  const records = [rate("r1", "2025-01-01", 80), rate("r2", "2026-03-12", 95)];
+
+  it("finds a record starting on the same day for the same employee", () => {
+    expect(findRateConflict(records, employeeId, isoDate("2026-03-12"), null)?.id).toBe("r2");
+  });
+
+  it("ignores the record being corrected", () => {
+    expect(
+      findRateConflict(records, employeeId, isoDate("2026-03-12"), "r2" as RateRecordId),
+    ).toBeUndefined();
+  });
+
+  it("allows a retroactive date nobody uses", () => {
+    expect(findRateConflict(records, employeeId, isoDate("2024-06-01"), null)).toBeUndefined();
   });
 });

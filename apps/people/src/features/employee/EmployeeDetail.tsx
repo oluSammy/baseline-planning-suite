@@ -1,6 +1,9 @@
-import type { EmployeeId } from "@baseline/domain";
-import { useAppSelector } from "../../store/hooks";
+import type { EmployeeId, RateRecordId } from "@baseline/domain";
+import { useState } from "react";
+import { useAppSelector, useAppDispatch } from "../../store/hooks";
+import { rateAdded, rateCorrected, rateRemoved } from "../../store/rateRecordsSlice";
 import { selectEmployeeById, selectRateHistoryFor } from "../../store/selectors";
+import { RateForm } from "./RateForm";
 
 interface EmployeeDetailProps {
   readonly employeeId: EmployeeId;
@@ -10,6 +13,10 @@ interface EmployeeDetailProps {
 export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
   const employee = useAppSelector((state) => selectEmployeeById(state, employeeId));
   const periods = useAppSelector((state) => selectRateHistoryFor(state, employeeId));
+
+  const dispatch = useAppDispatch();
+  const [editingId, setEditingId] = useState<RateRecordId | null>(null);
+  const records = periods.map((p) => p.record);
 
   if (!employee) {
     return <p role="alert">Employee not found.</p>;
@@ -37,19 +44,54 @@ export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
               <th scope="col">Valid from</th>
               <th scope="col">Until</th>
               <th scope="col">€ / hour</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {periods.map(({ record, validTo }) => (
-              <tr key={record.id}>
-                <td>{record.validFrom}</td>
-                <td>{validTo ?? "open"}</td>
-                <td>{record.hourlyCost.toFixed(2)}</td>
-              </tr>
-            ))}
+            {periods.map(({ record, validTo }) =>
+              editingId === record.id ? (
+                <tr key={record.id}>
+                  <td colSpan={4}>
+                    <RateForm
+                      initial={{ validFrom: record.validFrom, hourlyCost: record.hourlyCost }}
+                      employeeRecords={records}
+                      excludeId={record.id}
+                      submitLabel="Save"
+                      onCancel={() => setEditingId(null)}
+                      onSubmit={(value) => {
+                        dispatch(rateCorrected({ id: record.id, ...value }));
+                        setEditingId(null);
+                      }}
+                    />
+                  </td>
+                </tr>
+              ) : (
+                <tr key={record.id}>
+                  <td>{record.validFrom}</td>
+                  <td>{validTo ?? "open"}</td>
+                  <td>{record.hourlyCost.toFixed(2)}</td>
+                  <td>
+                    <button type="button" onClick={() => setEditingId(record.id)}>
+                      Correct
+                    </button>
+                    <button type="button" onClick={() => dispatch(rateRemoved(record.id))}>
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ),
+            )}
           </tbody>
         </table>
       )}
+
+      <h3>Add rate</h3>
+      <RateForm
+        employeeRecords={records}
+        excludeId={null}
+        submitLabel="Add rate"
+        onSubmit={(value) => dispatch(rateAdded({ employeeId, ...value }))}
+      />
     </section>
   );
 }
