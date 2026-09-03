@@ -15,7 +15,7 @@ export const mount: MountFn = (container) => {
     persistence: localStorageAdapter(STORAGE_KEY, isPersistedState),
   });
   const root = createRoot(container);
-  
+
   root.render(
     <Provider store={store}>
       <App />

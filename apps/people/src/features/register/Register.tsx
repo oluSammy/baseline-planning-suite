@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { useAppSelector } from "../../store/hooks";
 import { selectAllEmployees, selectEmployeesMatching } from "../../store/selectors";
+import type { EmployeeId } from "@baseline/domain";
 
-export function Register() {
+interface RegisterProps {
+  readonly onSelect: (employeeId: EmployeeId) => void;
+}
+
+export function Register({ onSelect }: RegisterProps) {
   const [query, setQuery] = useState("");
   const employees = useAppSelector((state) => selectEmployeesMatching(state, query));
   const total = useAppSelector(selectAllEmployees).length;
@@ -33,7 +38,11 @@ export function Register() {
         <tbody>
           {employees.map((employee) => (
             <tr key={employee.id}>
-              <td>{employee.name}</td>
+              <td>
+                <button type="button" onClick={() => onSelect(employee.id)}>
+                  {employee.name}
+                </button>
+              </td>
               <td>{employee.role}</td>
               <td>{employee.weeklyHours}</td>
             </tr>
