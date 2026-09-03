@@ -58,4 +58,47 @@ export interface Allocation {
   readonly amount: PersonMonths;
 }
 
-export type * from "./model";
+// way to make branded values
+export const WEEKLY_HOURS: readonly WeeklyHours[] = [40, 32, 20];
+
+export function isWeeklyHours(value: number): value is WeeklyHours {
+  return (WEEKLY_HOURS as readonly number[]).includes(value);
+}
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const MONTH_PATTERN = /^\d{4}-\d{2}$/;
+
+function isRealDay(value: string): boolean {
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().startsWith(value);
+}
+
+// accepts only a calendar day - YYYY-MM-DD format
+export function isoDate(value: string): ISODate {
+  if (!ISO_DATE_PATTERN.test(value) || !isRealDay(value)) {
+    throw new Error(`Invalid ISO date: ${value}`);
+  }
+  return value as ISODate;
+}
+
+// accepts YYYY-MM with a month from 01 - 12
+export function month(value: string): Month {
+  if (!MONTH_PATTERN.test(value) || !isRealDay(`${value}-01`)) {
+    throw new Error(`Invalid month: ${value}`);
+  }
+  return value as Month;
+}
+
+export function personMonths(value: number): PersonMonths {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error(`Invalid person-months: ${value}`);
+  }
+  return value as PersonMonths;
+}
+
+export function hourlyCost(value: number): HourlyCost {
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(`Invalid hourly cost: ${value}`);
+  }
+  return value as HourlyCost;
+}
