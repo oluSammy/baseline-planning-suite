@@ -1,24 +1,28 @@
 {
-    "name": "baseline",
-    "version": "0.1.0",
-    "packageManager": "pnpm@10.29.3",
-    "private": true,
-    "engines": {
-        "node": ">=22"
-    },
-    "devDependencies": {
-        "@eslint/js": "^10.0.1",
-        "eslint": "^10.9.1",
-        "eslint-plugin-import-x": "^4.17.1",
-        "globals": "^17.12.0",
-        "typescript": "^6.0.3",
-        "typescript-eslint": "^8.69.0",
-        "vitest": "^4.1.11"
-    },
-    "scripts": {
-        "typecheck": "pnpm -r run typecheck",
-        "lint": "eslint .",
-        "test": "vitest run",
-        "verify": "pnpm typecheck && pnpm lint && pnpm test"
-    }
+  "name": "baseline",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.29.3",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import-x": "^4.17.1",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^4.1.11"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  }
 }
