@@ -2,9 +2,10 @@ import { loadSeed } from "@baseline/fixtures";
 import { describe, expect, it } from "vitest";
 import { createPeopleStore } from "../index";
 import { selectAllEmployees, selectEmployeesMatching } from "../selectors";
+import { memoryAdapter } from "../persistence";
 
 describe("people selectors", () => {
-  const state = createPeopleStore(loadSeed()).getState();
+  const state = createPeopleStore({ seed: loadSeed(), persistence: memoryAdapter() }).getState();
 
   it("lists every employee alphabetically", () => {
     const names = selectAllEmployees(state).map((e) => e.name);

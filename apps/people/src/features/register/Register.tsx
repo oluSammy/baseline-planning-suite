@@ -19,7 +19,9 @@ export function Register() {
           placeholder="Name or role"
         />
       </label>
-      <p>{employees.length} of {total}</p>
+      <p>
+        {employees.length} of {total}
+      </p>
       <table>
         <thead>
           <tr>
