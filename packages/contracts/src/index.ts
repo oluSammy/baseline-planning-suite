@@ -1,4 +1,4 @@
-import type { Employee, PersonMonthLoad, RateRecord } from "@baseline/domain";
+import type { Employee, EmployeeId, PersonMonthLoad, RateRecord } from "@baseline/domain";
 
 // Contracts between the three Baseline apps. Types and names only.
 // so that the apps depend on this package and never on each other
@@ -52,4 +52,28 @@ export interface PeopleApiModule {
 /** The module Delivery exposes at `./api`. */
 export interface AllocationsApiModule {
   readonly allocationsApi: AllocationsApi;
+}
+
+/** A display currency. Rates and costs are stored in EUR; this only changes what is shown. */
+export interface DisplayCurrency {
+  readonly code: string;
+  /** How many units of this currency one euro buys. 1 for EUR itself. */
+  readonly perEur: number;
+}
+
+/** What the shell owns and pushes into every remote. */
+export interface HostState {
+  readonly currency: DisplayCurrency;
+  readonly activeUser: EmployeeId | null;
+}
+
+export interface HostContext {
+  snapshot(): HostState;
+  subscribe(listener: (state: HostState) => void): () => void;
+}
+
+export interface MountContext {
+  readonly people?: PeopleApi;
+  readonly allocations?: AllocationsApi;
+  readonly host?: HostContext;
 }

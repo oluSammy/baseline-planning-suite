@@ -1,6 +1,7 @@
-import type { MountContext, RemoteName } from "@baseline/contracts";
+import type { MountContext, PeopleApi, RemoteName } from "@baseline/contracts";
 import { useEffect, useState } from "react";
 import { RemotePanel } from "./RemotePanel";
+import { HostControls } from "./HostControls";
 
 const ROUTES: ReadonlyArray<{
   readonly path: string;
@@ -17,9 +18,10 @@ function remoteForPath(pathname: string): RemoteName {
 
 interface AppProps {
   readonly contexts: Readonly<Record<RemoteName, MountContext>>;
+  readonly peopleApi: PeopleApi | null;
 }
 
-export function App({ contexts }: AppProps) {
+export function App({ contexts, peopleApi }: AppProps) {
   const [pathname, setPathname] = useState(window.location.pathname);
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export function App({ contexts }: AppProps) {
             </a>
           ))}
         </nav>
+        <HostControls peopleApi={peopleApi} />
       </header>
       <RemotePanel name={active} context={contexts[active]} />
     </>

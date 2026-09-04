@@ -8,6 +8,9 @@ import type {
   PeopleApiModule,
   RemoteName,
 } from "@baseline/contracts";
+import { getShellStore } from "./store/instance";
+import { createHostContext } from "./hostContext";
+import { Provider } from "react-redux";
 
 async function loadOptional<T>(id: string): Promise<T | null> {
   try {
@@ -32,12 +35,22 @@ async function start(): Promise<void> {
     loadOptional<AllocationsApiModule>("delivery/api"),
   ]);
 
+  const store = getShellStore();
+  const host = createHostContext(store);
+
   const contexts: Record<RemoteName, MountContext> = {
-    people: allocationsModule ? { allocations: allocationsModule.allocationsApi } : {},
-    delivery: peopleModule ? { people: peopleModule.peopleApi } : {},
+    people: {
+      host,
+      ...(allocationsModule ? { allocations: allocationsModule.allocationsApi } : {}),
+    },
+    delivery: { host, ...(peopleModule ? { people: peopleModule.peopleApi } : {}) },
   };
 
-  createRoot(container).render(<App contexts={contexts} />);
+  createRoot(container).render(
+    <Provider store={store}>
+      <App contexts={contexts} peopleApi={peopleModule?.peopleApi ?? null} />
+    </Provider>,
+  );
 }
 
 void start();
