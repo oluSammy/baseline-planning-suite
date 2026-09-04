@@ -1,5 +1,6 @@
 import type { Allocation, BreakdownItem, Employee, EmployeeId, Month } from "./model";
 import type { TreeNode } from "./tree";
+import { largestRemainder, roundTo } from "./rounding";
 
 // Person-months per month. Missing month means no allocation.
 export type MonthCells = Partial<Record<Month, number>>;
@@ -25,12 +26,18 @@ export interface PersonRow {
   readonly total: number;
 }
 
+export interface DisplayRow {
+  readonly row: GridRow;
+  readonly cells: MonthCells;
+  readonly total: number;
+}
+
 export type GridRow = ItemRow | PersonRow;
 
-function sumCells(rows: readonly { cells: MonthCells }[], months: readonly Month[]): MonthCells {
+function sumCells(cellSets: readonly MonthCells[], months: readonly Month[]): MonthCells {
   const cells: MonthCells = {};
   for (const m of months) {
-    const sum = rows.reduce((acc, row) => acc + (row.cells[m] ?? 0), 0);
+    const sum = cellSets.reduce((acc, set) => acc + (set[m] ?? 0), 0);
     if (sum !== 0) cells[m] = sum;
   }
   return cells;
@@ -74,7 +81,10 @@ export function buildGrid(
           total: totalOf(cells, months),
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
-      const cells = sumCells(personRows, months);
+      const cells = sumCells(
+        personRows.map((r) => r.cells),
+        months,
+      );
       return [
         {
           kind: "item",
@@ -92,7 +102,10 @@ export function buildGrid(
     const directChildren = childRows.filter(
       (row) => row.kind === "item" && row.depth === node.depth + 1,
     );
-    const cells = sumCells(directChildren, months);
+    const cells = sumCells(
+      directChildren.map((r) => r.cells),
+      months,
+    );
     return [
       {
         kind: "item",
@@ -107,4 +120,44 @@ export function buildGrid(
   };
 
   return tree.flatMap(walk);
+}
+
+// person rows are rounded with largest remainder so their cells add
+// to their rounded total
+export function reconcileForDisplay(
+  rows: readonly GridRow[],
+  months: readonly Month[],
+  dp: number,
+): DisplayRow[] {
+  const contributions = new Map<BreakdownItem["id"], MonthCells[]>();
+  const push = (key: BreakdownItem["id"], cells: MonthCells) => {
+    contributions.set(key, [...(contributions.get(key) ?? []), cells]);
+  };
+
+  const out: DisplayRow[] = [];
+  for (let i = rows.length - 1; i >= 0; i -= 1) {
+    const row = rows[i];
+    if (!row) continue;
+
+    let cells: MonthCells;
+    if (row.kind === "person") {
+      const rounded = largestRemainder(
+        months.map((m) => row.cells[m] ?? 0),
+        dp,
+      );
+      cells = Object.fromEntries(months.map((m, index) => [m, rounded[index] ?? 0]));
+      push(row.item.id, cells);
+    } else {
+      const summed = sumCells(contributions.get(row.item.id) ?? [], months);
+      cells = Object.fromEntries(months.map((m) => [m, roundTo(summed[m] ?? 0, dp)]));
+      if (row.item.parentId !== null) push(row.item.parentId, cells);
+    }
+
+    const total = roundTo(
+      months.reduce((acc, m) => acc + (cells[m] ?? 0), 0),
+      dp,
+    );
+    out[i] = { row, cells, total };
+  }
+  return out;
 }

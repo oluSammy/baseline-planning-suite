@@ -15,6 +15,9 @@ import { breakdownItemsAdapter } from "./breakdownItemsSlice";
 import type { RootState } from "./index";
 import { projectsAdapter } from "./projectsSlice";
 import { allocationsAdapter } from "./allocationsSlice";
+import { reconcileForDisplay } from "@baseline/domain";
+
+const PERSON_MONTH_DECIMALS = 2;
 
 const selectItemIdArg = (_state: RootState, itemId: BreakdownItemId) => itemId;
 
@@ -59,4 +62,9 @@ const selectEmployeeLookup = createSelector([selectAllEmployees], (employees) =>
 export const selectGridForProject = createSelector(
   [selectTreeForProject, selectAllAllocations, selectEmployeeLookup, selectMonthsForProject],
   (tree, allocations, employees, months) => buildGrid(tree, allocations, employees, months),
+);
+
+export const selectDisplayGridForProject = createSelector(
+  [selectGridForProject, selectMonthsForProject],
+  (rows, months) => reconcileForDisplay(rows, months, PERSON_MONTH_DECIMALS),
 );

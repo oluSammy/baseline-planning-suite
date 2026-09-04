@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGrid, type PersonRow } from "../grid";
+import { buildGrid, reconcileForDisplay, type PersonRow } from "../grid";
 import {
   month,
   personMonths,
@@ -70,5 +70,25 @@ describe("buildGrid", () => {
     const e2 = rows.find((r): r is PersonRow => r.kind === "person" && r.employeeId === "e2");
     expect(e2?.total).toBe(0.5);
     expect(e2?.label).toBe("e2");
+  });
+});
+
+describe("reconcileForDisplay", () => {
+  it("rounds person rows with largest remainder and sums derived rows from displayed values", () => {
+    const tree = buildTree([item("p", null), item("leaf", "p")], project);
+    const allocations = [
+      alloc("a1", "leaf", "e1", m1, 0.125),
+      alloc("a2", "leaf", "e1", m2, 0.125),
+    ];
+    const [parent, leaf, person] = reconcileForDisplay(
+      buildGrid(tree, allocations, employees, [m1, m2]),
+      [m1, m2],
+      2,
+    );
+
+    expect(person?.cells).toEqual({ [m1]: 0.13, [m2]: 0.12 });
+    expect(person?.total).toBe(0.25);
+    expect(leaf?.cells).toEqual(person?.cells);
+    expect(parent?.total).toBe(0.25);
   });
 });
