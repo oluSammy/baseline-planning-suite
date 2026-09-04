@@ -17,6 +17,7 @@ describe("delivery store persistence", () => {
     const saved: PersistedState = {
       projects: { ids: [], entities: {} },
       breakdownItems: { ids: [], entities: {} },
+      allocations: { ids: [], entities: {} },
     };
     const store = createDeliveryStore({ seed, persistence: memoryAdapter(saved) });
     expect(store.getState().projects.ids).toHaveLength(0);
@@ -26,6 +27,7 @@ describe("delivery store persistence", () => {
     const adapter = memoryAdapter<PersistedState>({
       projects: { ids: [], entities: {} },
       breakdownItems: { ids: [], entities: {} },
+      allocations: { ids: [], entities: {} },
     });
     const store = createDeliveryStore({ seed, persistence: adapter });
 

@@ -5,6 +5,7 @@ import { ProjectSwitcher } from "./features/projects/ProjectSwitcher";
 import { resetToSeed } from "./store";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { selectAllEmployees, selectAllProjects, selectPeopleAvailable } from "./store/selectors";
+import { StaffingGrid } from "./features/grid/StaffingGrid";
 
 export function App() {
   const dispatch = useAppDispatch();
@@ -34,6 +35,7 @@ export function App() {
         <>
           <ProjectSwitcher value={active} onChange={setProjectId} />
           <BreakdownTree projectId={active} />
+          <StaffingGrid projectId={active} />
         </>
       )}
     </main>

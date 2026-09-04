@@ -10,11 +10,13 @@ import {
 import { breakdownItemsAdapter, breakdownItemsReducer } from "./breakdownItemsSlice";
 import { projectsAdapter, projectsReducer } from "./projectsSlice";
 import { peopleReducer } from "./peopleSlice";
+import { allocationsReducer, allocationsAdapter } from "./allocationsSlice";
 
 const sliceReducer = combineReducers({
   projects: projectsReducer,
   breakdownItems: breakdownItemsReducer,
   people: peopleReducer,
+  allocations: allocationsReducer,
 });
 
 export type RootState = ReturnType<typeof sliceReducer>;
@@ -37,6 +39,7 @@ export function stateFromSeed(seed: SeedData): PersistedState {
       breakdownItemsAdapter.getInitialState(),
       seed.breakdownItems,
     ),
+    allocations: allocationsAdapter.setAll(allocationsAdapter.getInitialState(), seed.allocations),
   };
 }
 
@@ -51,8 +54,12 @@ export function isPersistedState(value: unknown): value is PersistedState {
   if (typeof value !== "object" || value === null) {
     return false;
   }
-  const candidate = value as { projects?: unknown; breakdownItems?: unknown };
-  return hasEntityShape(candidate.projects) && hasEntityShape(candidate.breakdownItems);
+  const candidate = value as { projects?: unknown; breakdownItems?: unknown; allocations: unknown };
+  return (
+    hasEntityShape(candidate.projects) &&
+    hasEntityShape(candidate.breakdownItems) &&
+    hasEntityShape(candidate.allocations)
+  );
 }
 
 interface DeliveryStoreOptions {
