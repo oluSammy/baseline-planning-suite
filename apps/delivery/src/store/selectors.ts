@@ -11,9 +11,12 @@ import {
   convertGrid,
   UNIT_DECIMALS,
   type DisplayUnit,
+  unpricedCellKeys,
+  type PeopleLookup,
+  type RateRecord,
 } from "@baseline/domain";
 import { createSelector } from "@reduxjs/toolkit";
-import { employeesAdapter } from "./peopleSlice";
+import { employeesAdapter, rateRecordsAdapter } from "./peopleSlice";
 import { breakdownItemsAdapter } from "./breakdownItemsSlice";
 import type { RootState } from "./index";
 import { projectsAdapter } from "./projectsSlice";
@@ -56,6 +59,10 @@ export const selectMonthsForProject = createSelector(
   (project) => (project ? monthsBetween(monthOf(project.startDate), monthOf(project.endDate)) : []),
 );
 
+export const { selectAll: selectAllRateRecords } = rateRecordsAdapter.getSelectors(
+  (state: RootState) => state.people.rateRecords,
+);
+
 const selectEmployeeLookup = createSelector([selectAllEmployees], (employees) => {
   return new Map<EmployeeId, Employee>(employees.map((e) => [e.id, e]));
 });
@@ -67,8 +74,27 @@ export const selectGridForProject = createSelector(
 
 const selectUnitArg = (_state: RootState, _projectId: ProjectId, unit: DisplayUnit) => unit;
 
+const selectPeopleLookup = createSelector(
+  [selectAllEmployees, selectAllRateRecords],
+  (employees, rateRecords): PeopleLookup => {
+    const ratesByEmployee = new Map<EmployeeId, RateRecord[]>();
+    for (const record of rateRecords) {
+      ratesByEmployee.set(record.employeeId, [
+        ...(ratesByEmployee.get(record.employeeId) ?? []),
+        record,
+      ]);
+    }
+    return { employees: new Map(employees.map((e) => [e.id, e])), ratesByEmployee };
+  },
+);
+
 export const selectDisplayGridForProject = createSelector(
-  [selectGridForProject, selectMonthsForProject, selectEmployeeLookup, selectUnitArg],
-  (rows, months, employees, unit) =>
-    reconcileForDisplay(convertGrid(rows, unit, months, employees), months, UNIT_DECIMALS[unit]),
+  [selectGridForProject, selectMonthsForProject, selectPeopleLookup, selectUnitArg],
+  (rows, months, people, unit) =>
+    reconcileForDisplay(convertGrid(rows, unit, months, people), months, UNIT_DECIMALS[unit]),
+);
+
+export const selectUnpricedCellKeys = createSelector(
+  [selectGridForProject, selectMonthsForProject, selectPeopleLookup],
+  (rows, months, people) => unpricedCellKeys(rows, months, people),
 );

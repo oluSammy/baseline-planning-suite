@@ -1,7 +1,8 @@
-import type { Allocation, BreakdownItem, Employee, EmployeeId, Month } from "./model";
+import type { Allocation, BreakdownItem, Employee, EmployeeId, Month, RateRecord } from "./model";
 import type { TreeNode } from "./tree";
 import { largestRemainder, roundTo } from "./rounding";
 import { personMonthsToHours, personMonthsToPercent, type DisplayUnit } from "./units";
+import { priceAllocation } from "./pricing";
 
 // Person-months per month. Missing month means no allocation.
 export type MonthCells = Partial<Record<Month, number>>;
@@ -178,29 +179,6 @@ function rederive(
   return out;
 }
 
-// converts a person-month grid into the requested unit, exactly, without rounding.
-export function convertGrid(
-  rows: readonly GridRow[],
-  unit: DisplayUnit,
-  months: readonly Month[],
-  employees: ReadonlyMap<EmployeeId, Employee>,
-): GridRow[] {
-  switch (unit) {
-    case "personMonths":
-      return [...rows];
-    case "percent":
-      return rederive(rows, months, (row) => mapCells(row.cells, months, personMonthsToPercent));
-    case "hours":
-      return rederive(rows, months, (row) => {
-        const employee = employees.get(row.employeeId);
-        if (!employee) return {};
-        return mapCells(row.cells, months, (pm, m) =>
-          personMonthsToHours(pm, employee.weeklyHours, m),
-        );
-      });
-  }
-}
-
 function mapCells(
   cells: MonthCells,
   months: readonly Month[],
@@ -212,4 +190,76 @@ function mapCells(
     if (value !== undefined) out[m] = fn(value, m);
   }
   return out;
+}
+
+// What Delivery knows about people, keyed by employee. Both come from the PeopleApi.
+export interface PeopleLookup {
+  readonly employees: ReadonlyMap<EmployeeId, Employee>;
+  readonly ratesByEmployee: ReadonlyMap<EmployeeId, readonly RateRecord[]>;
+}
+
+// converts a person-month grid into the requested unit, exactly, without rounding.
+export function convertGrid(
+  rows: readonly GridRow[],
+  unit: DisplayUnit,
+  months: readonly Month[],
+  people: PeopleLookup,
+): GridRow[] {
+  switch (unit) {
+    case "personMonths":
+      return [...rows];
+    case "percent":
+      return rederive(rows, months, (row) => mapCells(row.cells, months, personMonthsToPercent));
+    case "hours":
+      return rederive(rows, months, (row) => {
+        const employee = people.employees.get(row.employeeId);
+        if (!employee) return {};
+        return mapCells(row.cells, months, (pm, m) =>
+          personMonthsToHours(pm, employee.weeklyHours, m),
+        );
+      });
+    case "cost":
+      return rederive(rows, months, (row) => {
+        const employee = people.employees.get(row.employeeId);
+        if (!employee) return {};
+        const rateRecords = people.ratesByEmployee.get(row.employeeId) ?? [];
+        return mapCells(
+          row.cells,
+          months,
+          (pm, m) =>
+            priceAllocation({
+              personMonths: pm,
+              month: m,
+              weeklyHours: employee.weeklyHours,
+              rateRecords,
+            }).cost,
+        );
+      });
+  }
+}
+
+// Cells that have working days with no rate, keyed `employeeId|month`.
+export function unpricedCellKeys(
+  rows: readonly GridRow[],
+  months: readonly Month[],
+  people: PeopleLookup,
+): Set<string> {
+  const keys = new Set<string>();
+  for (const row of rows) {
+    if (row.kind !== "person") continue;
+    const employee = people.employees.get(row.employeeId);
+    if (!employee) continue;
+    const rateRecords = people.ratesByEmployee.get(row.employeeId) ?? [];
+    for (const m of months) {
+      if (row.cells[m] === undefined) continue;
+      const { unpricedDays } = priceAllocation({
+        personMonths: row.cells[m] ?? 0,
+        month: m,
+        weeklyHours: employee.weeklyHours,
+        rateRecords,
+      });
+      if (unpricedDays > 0) keys.add(`${row.employeeId}|${m}`);
+    }
+  }
+  return keys;
 }

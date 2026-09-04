@@ -5,6 +5,7 @@ import {
   selectDisplayGridForProject,
   selectMonthsForProject,
   selectPeopleAvailable,
+  selectUnpricedCellKeys,
 } from "../../store/selectors";
 interface StaffingGridProps {
   readonly projectId: ProjectId;
@@ -14,6 +15,7 @@ const UNIT_LABELS: Readonly<Record<DisplayUnit, string>> = {
   personMonths: "PM",
   hours: "Hours",
   percent: "%",
+  cost: "€",
 };
 
 const MONTH_NAMES = [
@@ -31,7 +33,7 @@ const MONTH_NAMES = [
   "Dec",
 ];
 
-/** `2026-04` → `Apr 26`, as in the brief's Figure 5. */
+// `2026-04` - `Apr 26`
 function formatMonth(month: Month): string {
   const [year, mon] = month.split("-");
   return `${MONTH_NAMES[Number(mon) - 1]} ${year?.slice(2)}`;
@@ -41,6 +43,7 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
   const months = useAppSelector((state) => selectMonthsForProject(state, projectId));
   const [unit, setUnit] = useState<DisplayUnit>("personMonths");
   const peopleAvailable = useAppSelector(selectPeopleAvailable);
+  const unpriced = useAppSelector((state) => selectUnpricedCellKeys(state, projectId));
   const rows = useAppSelector((state) => selectDisplayGridForProject(state, projectId, unit));
   const dp = UNIT_DECIMALS[unit];
 
@@ -56,7 +59,7 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
               name="unit"
               value={option}
               checked={unit === option}
-              disabled={option === "hours" && !peopleAvailable}
+              disabled={(option === "hours" || option === "cost") && !peopleAvailable}
               onChange={() => setUnit(option)}
             />
             {UNIT_LABELS[option]}
@@ -88,7 +91,12 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
                 )}
               </th>
               {months.map((m) => (
-                <td key={m}>{row.cells[m] === undefined ? "" : row.cells[m].toFixed(dp)}</td>
+                <td key={m}>
+                  {row.cells[m] === undefined ? "" : row.cells[m].toFixed(dp)}
+                  {row.kind === "person" && unpriced.has(`${row.employeeId}|${m}`) && (
+                    <abbr title="Some working days have no rate and are priced at zero">*</abbr>
+                  )}
+                </td>
               ))}
               <td>{row.total.toFixed(dp)}</td>
             </tr>

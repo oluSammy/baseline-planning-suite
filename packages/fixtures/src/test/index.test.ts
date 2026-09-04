@@ -4,7 +4,7 @@ import { loadSeed } from "../index";
 describe("seed fixtures", () => {
   const seed = loadSeed();
 
-  it("carries the counts stated in the brief", () => {
+  it("carries the counts stated", () => {
     expect(seed.employees).toHaveLength(60);
     expect(seed.rateRecords).toHaveLength(150);
     expect(seed.projects).toHaveLength(4);

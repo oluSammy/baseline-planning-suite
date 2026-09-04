@@ -39,3 +39,23 @@ export function workingDaysInMonth(m: Month): number {
   }
   return count;
 }
+
+// Working days from `from` to `to`, both inclusive. Zero when `to` is before `from`
+export function workingDaysBetween(from: ISODate, to: ISODate): number {
+  let count = 0;
+  for (let cursor = from; cursor <= to; cursor = addDays(cursor, 1)) {
+    const weekday = new Date(`${cursor}T00:00:00Z`).getUTCDay();
+    if (weekday !== 0 && weekday !== 6) count += 1;
+  }
+  return count;
+}
+
+// First and last calendar day of a month.
+export function monthBounds(m: Month): { readonly first: ISODate; readonly last: ISODate } {
+  const [year, mon] = m.split("-").map(Number) as [number, number];
+  const lastDay = new Date(Date.UTC(year, mon, 0)).getUTCDate();
+  return {
+    first: isoDate(`${m}-01`),
+    last: isoDate(`${m}-${String(lastDay).padStart(2, "0")}`),
+  };
+}

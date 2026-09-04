@@ -2,13 +2,14 @@ import { workingDaysInMonth } from "./calendar";
 import type { Month, WeeklyHours } from "./model";
 
 // The units the grid can read and edit in.
-export type DisplayUnit = "personMonths" | "hours" | "percent";
+export type DisplayUnit = "personMonths" | "hours" | "percent" | "cost";
 
 // Display precision
 export const UNIT_DECIMALS: Readonly<Record<DisplayUnit, number>> = {
   personMonths: 2,
   hours: 2,
   percent: 1,
+  cost: 2,
 };
 
 // one person-month = weekly hours × (working days ÷ 5). It varies by

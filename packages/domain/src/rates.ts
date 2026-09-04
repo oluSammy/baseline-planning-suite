@@ -1,10 +1,18 @@
-import { addDays } from "./calendar";
+import { addDays, monthBounds, workingDaysBetween } from "./calendar";
 import type { EmployeeId, ISODate, RateRecord, RateRecordId } from "./model";
+import type { HourlyCost, Month } from "./model";
 
 // One rate and the period it covers. `validTo` is the last day, inclusive; null means open-ended.
 export interface RatePeriod {
   readonly record: RateRecord;
   readonly validTo: ISODate | null;
+}
+
+export interface RateSlice {
+  readonly from: ISODate;
+  readonly to: ISODate;
+  readonly workingDays: number;
+  readonly hourlyCost: HourlyCost | null;
 }
 
 // Sorts records by start date. ISO dates sort correctly as strings
@@ -37,4 +45,39 @@ export function findRateConflict(
   return records.find(
     (r) => r.employeeId === employeeId && r.validFrom === validFrom && r.id !== excludeId,
   );
+}
+
+// partitions a month's working days by the rate in effect on each day.
+// One change in the month gives two slices; more changes give more. Days
+// before the employee's first record form an unpriced slice.
+export function rateSlices(records: readonly RateRecord[], m: Month): RateSlice[] {
+  const { first, last } = monthBounds(m);
+  const periods = rateHistory(records);
+  const slices: RateSlice[] = [];
+
+  const firstStart = periods[0]?.record.validFrom;
+  if (firstStart === undefined || firstStart > first) {
+    const to = firstStart === undefined ? last : addDays(firstStart, -1);
+    const end = to < last ? to : last;
+    slices.push({
+      from: first,
+      to: end,
+      workingDays: workingDaysBetween(first, end),
+      hourlyCost: null,
+    });
+  }
+
+  for (const { record, validTo } of periods) {
+    const from = record.validFrom > first ? record.validFrom : first;
+    const to = validTo === null || validTo > last ? last : validTo;
+    if (from > to) continue;
+    slices.push({
+      from,
+      to,
+      workingDays: workingDaysBetween(from, to),
+      hourlyCost: record.hourlyCost,
+    });
+  }
+
+  return slices.filter((slice) => slice.workingDays > 0);
 }

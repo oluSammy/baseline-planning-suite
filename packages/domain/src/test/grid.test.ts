@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildGrid, convertGrid, type PersonRow } from "../grid";
+import { buildGrid, convertGrid, type PeopleLookup, type PersonRow } from "../grid";
 import {
+  hourlyCost,
+  isoDate,
   month,
   personMonths,
   type Allocation,
@@ -10,6 +12,8 @@ import {
   type Employee,
   type EmployeeId,
   type ProjectId,
+  type RateRecord,
+  type RateRecordId,
 } from "../model";
 import { buildTree } from "../tree";
 
@@ -76,17 +80,41 @@ describe("buildGrid", () => {
 describe("convertGrid", () => {
   const tree = buildTree([item("leaf", null)], project);
   const rows = buildGrid(tree, [alloc("a1", "leaf", "e1", m1, 0.5)], employees, [m1]);
+  const okaforRates: RateRecord[] = [
+    {
+      id: "r1" as RateRecordId,
+      employeeId: "e1" as EmployeeId,
+      validFrom: isoDate("2025-01-01"),
+      hourlyCost: hourlyCost(80),
+    },
+    {
+      id: "r2" as RateRecordId,
+      employeeId: "e1" as EmployeeId,
+      validFrom: isoDate("2026-03-12"),
+      hourlyCost: hourlyCost(95),
+    },
+  ];
+  const people: PeopleLookup = {
+    employees,
+    ratesByEmployee: new Map([["e1" as EmployeeId, okaforRates]]),
+  };
 
   it("converts person rows and re-derives parents in hours and percent", () => {
-    const [leafHours, personHours] = convertGrid(rows, "hours", [m1], employees);
+    const [leafHours, personHours] = convertGrid(rows, "hours", [m1], people);
     expect(personHours?.cells[m1]).toBe(88);
     expect(leafHours?.cells[m1]).toBe(88);
 
-    const [, personPercent] = convertGrid(rows, "percent", [m1], employees);
+    const [, personPercent] = convertGrid(rows, "percent", [m1], people);
     expect(personPercent?.cells[m1]).toBe(50);
   });
 
+  it("prices cost per the reference calculation", () => {
+    const [leafCost, personCost] = convertGrid(rows, "cost", [m1], people);
+    expect(personCost?.cells[m1]).toBe(7880);
+    expect(leafCost?.cells[m1]).toBe(7880);
+  });
+
   it("leaves person-months untouched", () => {
-    expect(convertGrid(rows, "personMonths", [m1], employees)).toEqual(rows);
+    expect(convertGrid(rows, "personMonths", [m1], people)).toEqual(rows);
   });
 });
