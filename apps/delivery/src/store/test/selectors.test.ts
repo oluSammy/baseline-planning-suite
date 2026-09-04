@@ -1,9 +1,9 @@
 import { loadSeed } from "@baseline/fixtures";
-import type { TreeNode } from "@baseline/domain";
+import type { BreakdownItemId, EmployeeId, Month, TreeNode } from "@baseline/domain";
 import { memoryAdapter } from "@baseline/persistence";
 import { describe, expect, it } from "vitest";
 import { createDeliveryStore } from "../index";
-import { selectAllProjects, selectTreeForProject } from "../selectors";
+import { selectAllProjects, selectCellPersonMonths, selectTreeForProject } from "../selectors";
 
 describe("delivery selectors", () => {
   const state = createDeliveryStore({ seed: loadSeed(), persistence: memoryAdapter() }).getState();
@@ -20,5 +20,14 @@ describe("delivery selectors", () => {
         Math.max(...nodes.map((n) => (n.children.length ? deepest(n.children) : n.depth)));
       expect(deepest(tree)).toBeLessThanOrEqual(3);
     }
+  });
+
+  it("finds the reference cell in the seed", () => {
+    const cell = {
+      itemId: "wbs-012" as BreakdownItemId,
+      employeeId: "emp-001" as EmployeeId,
+      month: "2026-03" as Month,
+    };
+    expect(selectCellPersonMonths(state, cell)).toBe(0.5);
   });
 });

@@ -14,6 +14,7 @@ import {
   unpricedCellKeys,
   type PeopleLookup,
   type RateRecord,
+  type Month,
 } from "@baseline/domain";
 import { createSelector } from "@reduxjs/toolkit";
 import { employeesAdapter, rateRecordsAdapter } from "./peopleSlice";
@@ -24,6 +25,13 @@ import { allocationsAdapter } from "./allocationsSlice";
 import { reconcileForDisplay } from "@baseline/domain";
 
 const selectItemIdArg = (_state: RootState, itemId: BreakdownItemId) => itemId;
+
+// Identifies one editable cell: a person on a leaf in a month.
+export interface CellRef {
+  readonly itemId: BreakdownItemId;
+  readonly employeeId: EmployeeId;
+  readonly month: Month;
+}
 
 export const { selectAll: selectAllProjects, selectById: selectProjectById } =
   projectsAdapter.getSelectors((state: RootState) => state.projects);
@@ -74,7 +82,7 @@ export const selectGridForProject = createSelector(
 
 const selectUnitArg = (_state: RootState, _projectId: ProjectId, unit: DisplayUnit) => unit;
 
-const selectPeopleLookup = createSelector(
+export const selectPeopleLookup = createSelector(
   [selectAllEmployees, selectAllRateRecords],
   (employees, rateRecords): PeopleLookup => {
     const ratesByEmployee = new Map<EmployeeId, RateRecord[]>();
@@ -97,4 +105,20 @@ export const selectDisplayGridForProject = createSelector(
 export const selectUnpricedCellKeys = createSelector(
   [selectGridForProject, selectMonthsForProject, selectPeopleLookup],
   (rows, months, people) => unpricedCellKeys(rows, months, people),
+);
+
+const selectCellArg = (_state: RootState, cell: CellRef) => cell;
+
+// Exact person-months stored for a cell. Zero when nothing is allocated.
+export const selectCellPersonMonths = createSelector(
+  [selectAllAllocations, selectCellArg],
+  (allocations, cell) =>
+    allocations
+      .filter(
+        (a) =>
+          a.breakdownItemId === cell.itemId &&
+          a.employeeId === cell.employeeId &&
+          a.month === cell.month,
+      )
+      .reduce((acc, a) => acc + a.amount, 0),
 );
