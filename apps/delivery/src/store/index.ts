@@ -5,12 +5,24 @@ import {
   configureStore,
   createAction,
   createListenerMiddleware,
+  // createSelector,
   type UnknownAction,
 } from "@reduxjs/toolkit";
-import { breakdownItemsAdapter, breakdownItemsReducer } from "./breakdownItemsSlice";
+import {
+  breakdownItemsAdapter,
+  breakdownItemsReducer,
+  itemAdded,
+  itemDeleted,
+} from "./breakdownItemsSlice";
 import { projectsAdapter, projectsReducer } from "./projectsSlice";
 import { peopleReducer } from "./peopleSlice";
-import { allocationsReducer, allocationsAdapter } from "./allocationsSlice";
+import {
+  allocationsReducer,
+  allocationsAdapter,
+  allocationsMoved,
+  allocationsRemovedForItems,
+} from "./allocationsSlice";
+import { descendantIds } from "@baseline/domain";
 
 const sliceReducer = combineReducers({
   projects: projectsReducer,
@@ -67,13 +79,39 @@ interface DeliveryStoreOptions {
   readonly persistence: PersistenceAdapter<PersistedState>;
 }
 
+const { selectAll: allItems } = breakdownItemsAdapter.getSelectors();
+
 export function createDeliveryStore({ seed, persistence }: DeliveryStoreOptions) {
   const seedState = stateFromSeed(seed);
 
-  const rootReducer = (state: RootState | undefined, action: UnknownAction): RootState =>
-    resetToSeed.match(action)
-      ? { ...seedState, people: state?.people ?? emptyPeople() }
-      : sliceReducer(state, action);
+  const rootReducer = (state: RootState | undefined, action: UnknownAction): RootState => {
+    if (resetToSeed.match(action)) {
+      return { ...seedState, people: state?.people ?? emptyPeople() };
+    }
+
+    const next = sliceReducer(state, action);
+    if (!state) return next;
+
+    if (
+      itemAdded.match(action) &&
+      action.payload.parentId !== null &&
+      next.breakdownItems.entities[action.payload.id]
+    ) {
+      const move = allocationsMoved({ from: action.payload.parentId, to: action.payload.id });
+      return { ...next, allocations: allocationsReducer(next.allocations, move) };
+    }
+
+    if (itemDeleted.match(action)) {
+      const doomed = [
+        ...descendantIds(allItems(state.breakdownItems), action.payload),
+        action.payload,
+      ];
+      const remove = allocationsRemovedForItems(doomed);
+      return { ...next, allocations: allocationsReducer(next.allocations, remove) };
+    }
+
+    return next;
+  };
 
   const persist = createListenerMiddleware<RootState>();
   persist.startListening({

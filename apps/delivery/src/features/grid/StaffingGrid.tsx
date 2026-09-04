@@ -3,13 +3,16 @@ import {
   personMonths,
   toPersonMonths,
   UNIT_DECIMALS,
+  type BreakdownItemId,
   type DisplayUnit,
+  type EmployeeId,
   type GridRow,
   type Month,
   type ProjectId,
 } from "@baseline/domain";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
+  selectAllEmployees,
   selectDisplayGridForProject,
   selectMonthsForProject,
   selectPeopleAvailable,
@@ -56,9 +59,20 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
   const months = useAppSelector((state) => selectMonthsForProject(state, projectId));
   const [unit, setUnit] = useState<DisplayUnit>("personMonths");
   const peopleAvailable = useAppSelector(selectPeopleAvailable);
-  const unpriced = useAppSelector((state) => selectUnpricedCellKeys(state, projectId));
-  const rows = useAppSelector((state) => selectDisplayGridForProject(state, projectId, unit));
+  const rows = useAppSelector((state) =>
+    selectDisplayGridForProject(state, projectId, pending, unit),
+  );
+  const unpriced = useAppSelector((state) => selectUnpricedCellKeys(state, projectId, pending));
   const dp = UNIT_DECIMALS[unit];
+
+  const [pending, setPending] = useState<ReadonlyMap<BreakdownItemId, readonly EmployeeId[]>>(
+    new Map(),
+  );
+  const employees = useAppSelector(selectAllEmployees);
+
+  const assign = (itemId: BreakdownItemId, employeeId: EmployeeId) => {
+    setPending((prev) => new Map(prev).set(itemId, [...(prev.get(itemId) ?? []), employeeId]));
+  };
 
   const dispatch = useAppDispatch();
   const people = useAppSelector(selectPeopleLookup);
@@ -132,6 +146,32 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
                   </>
                 ) : (
                   row.label
+                )}
+                {row.kind === "item" && row.isLeaf && (
+                  <select
+                    aria-label={`Assign a person to ${row.item.name}`}
+                    value=""
+                    onChange={(event) => {
+                      if (event.target.value) assign(row.item.id, event.target.value as EmployeeId);
+                    }}
+                  >
+                    <option value="">Assign person…</option>
+                    {employees
+                      .filter(
+                        (e) =>
+                          !rows.some(
+                            (r) =>
+                              r.kind === "person" &&
+                              r.item.id === row.item.id &&
+                              r.employeeId === e.id,
+                          ),
+                      )
+                      .map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.name}
+                        </option>
+                      ))}
+                  </select>
                 )}
               </th>
               {months.map((m) => {

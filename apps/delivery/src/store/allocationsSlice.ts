@@ -19,6 +19,8 @@ export const allocationsAdapter = createEntityAdapter<Allocation, AllocationId>(
   selectId: (allocation) => allocation.id,
 });
 
+const { selectAll } = allocationsAdapter.getSelectors();
+
 export const allocationsSlice = createSlice({
   name: "allocations",
   initialState: allocationsAdapter.getInitialState(),
@@ -60,8 +62,25 @@ export const allocationsSlice = createSlice({
         });
       },
     },
+    allocationsMoved(state, action: PayloadAction<{ from: BreakdownItemId; to: BreakdownItemId }>) {
+      const moving = selectAll(state).filter((a) => a.breakdownItemId === action.payload.from);
+      allocationsAdapter.updateMany(
+        state,
+        moving.map((a) => ({ id: a.id, changes: { breakdownItemId: action.payload.to } })),
+      );
+    },
+    allocationsRemovedForItems(state, action: PayloadAction<readonly BreakdownItemId[]>) {
+      const doomed = new Set(action.payload);
+      allocationsAdapter.removeMany(
+        state,
+        selectAll(state)
+          .filter((a) => doomed.has(a.breakdownItemId))
+          .map((a) => a.id),
+      );
+    },
   },
 });
 
 export const allocationsReducer = allocationsSlice.reducer;
-export const { allocationSet } = allocationsSlice.actions;
+export const { allocationSet, allocationsMoved, allocationsRemovedForItems } =
+  allocationsSlice.actions;

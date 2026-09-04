@@ -118,3 +118,11 @@ describe("convertGrid", () => {
     expect(convertGrid(rows, "personMonths", [m1], people)).toEqual(rows);
   });
 });
+
+it("shows pending people as empty rows so they can be edited", () => {
+  const tree = buildTree([item("leaf", null)], project);
+  const pending = new Map([["leaf" as BreakdownItemId, ["e1" as EmployeeId]]]);
+  const rows = buildGrid(tree, [], employees, [m1], pending);
+  expect(rows.map((r) => r.kind)).toEqual(["item", "person"]);
+  expect(rows[1]?.cells).toEqual({});
+});

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { itemAdded, itemDeleted, itemMoved, itemRenamed } from "../../store/breakdownItemsSlice";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { selectMoveTargets, selectTreeForProject } from "../../store/selectors";
+import { selectAllocationCountForItem, selectDeleteImpact } from "../../store/selectors";
 
 interface BreakdownTreeProps {
   readonly projectId: ProjectId;
@@ -51,8 +52,13 @@ function TreeList({
 function TreeItem({ node, projectId }: { readonly node: TreeNode; readonly projectId: ProjectId }) {
   const dispatch = useAppDispatch();
   const targets = useAppSelector((state) => selectMoveTargets(state, node.item.id));
-  const [mode, setMode] = useState<"view" | "rename" | "add">("view");
   const canHaveChildren = node.depth < MAX_TREE_DEPTH;
+  const allocationsHere = useAppSelector((state) =>
+    selectAllocationCountForItem(state, node.item.id),
+  );
+  const impact = useAppSelector((state) => selectDeleteImpact(state, node.item.id));
+  const [mode, setMode] = useState<"view" | "rename" | "add" | "confirmDelete">("view");
+  const [notice, setNotice] = useState<string | null>(null);
 
   return (
     <li>
@@ -61,7 +67,12 @@ function TreeItem({ node, projectId }: { readonly node: TreeNode; readonly proje
           initial={node.item.name}
           submitLabel="Save"
           onSubmit={(name) => {
-            dispatch(itemRenamed({ id: node.item.id, name }));
+            dispatch(itemAdded({ projectId, parentId: node.item.id, name }));
+            if (allocationsHere > 0) {
+              setNotice(
+                `${allocationsHere} allocation${allocationsHere === 1 ? "" : "s"} moved from ${node.item.name} to ${name}.`,
+              );
+            }
             setMode("view");
           }}
           onCancel={() => setMode("view")}
@@ -102,10 +113,33 @@ function TreeItem({ node, projectId }: { readonly node: TreeNode; readonly proje
               ))}
             </select>
           </label>
-          <button type="button" onClick={() => dispatch(itemDeleted(node.item.id))}>
+          <button type="button" onClick={() => setMode("confirmDelete")}>
             Delete
           </button>
         </span>
+      )}
+      {mode === "confirmDelete" && (
+        <span role="alertdialog" aria-label={`Delete ${node.item.name}`}>
+          Delete {node.item.name}
+          {impact.items > 1 && ` and ${impact.items - 1} sub-item${impact.items === 2 ? "" : "s"}`}
+          {impact.allocations > 0 &&
+            `, removing ${impact.allocations} allocation${impact.allocations === 1 ? "" : "s"}`}
+          ?
+          <button type="button" onClick={() => dispatch(itemDeleted(node.item.id))}>
+            Confirm
+          </button>
+          <button type="button" onClick={() => setMode("view")}>
+            Cancel
+          </button>
+        </span>
+      )}
+      {notice && (
+        <p role="status">
+          {notice}{" "}
+          <button type="button" onClick={() => setNotice(null)}>
+            Dismiss
+          </button>
+        </p>
       )}
 
       {mode === "add" && (
@@ -113,7 +147,7 @@ function TreeItem({ node, projectId }: { readonly node: TreeNode; readonly proje
           initial=""
           submitLabel="Add"
           onSubmit={(name) => {
-            dispatch(itemAdded({ projectId, parentId: node.item.id, name }));
+            dispatch(itemRenamed({ id: node.item.id, name }));
             setMode("view");
           }}
           onCancel={() => setMode("view")}

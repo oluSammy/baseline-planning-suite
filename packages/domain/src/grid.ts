@@ -48,6 +48,8 @@ export function buildGrid(
   allocations: readonly Allocation[],
   employees: ReadonlyMap<EmployeeId, Employee>,
   months: readonly Month[],
+  // People to show on a leaf even with no allocation yet, so their cells can be edited
+  pendingPeople: ReadonlyMap<BreakdownItem["id"], readonly EmployeeId[]> = new Map(),
 ): GridRow[] {
   const inHorizon = new Set(months);
   const byItem = new Map<BreakdownItem["id"], Allocation[]>();
@@ -66,6 +68,10 @@ export function buildGrid(
         cells[a.month] = (cells[a.month] ?? 0) + a.amount;
         people.set(a.employeeId, cells);
       }
+      for (const employeeId of pendingPeople.get(node.item.id) ?? []) {
+        if (!people.has(employeeId)) people.set(employeeId, {});
+      }
+
       const personRows: PersonRow[] = [...people.entries()]
         .map(([employeeId, cells]) => ({
           kind: "person" as const,

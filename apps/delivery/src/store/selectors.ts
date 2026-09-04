@@ -15,6 +15,7 @@ import {
   type PeopleLookup,
   type RateRecord,
   type Month,
+  descendantIds,
 } from "@baseline/domain";
 import { createSelector } from "@reduxjs/toolkit";
 import { employeesAdapter, rateRecordsAdapter } from "./peopleSlice";
@@ -24,7 +25,7 @@ import { projectsAdapter } from "./projectsSlice";
 import { allocationsAdapter } from "./allocationsSlice";
 import { reconcileForDisplay } from "@baseline/domain";
 
-const selectItemIdArg = (_state: RootState, itemId: BreakdownItemId) => itemId;
+export const selectItemIdArg = (_state: RootState, itemId: BreakdownItemId) => itemId;
 
 // Identifies one editable cell: a person on a leaf in a month.
 export interface CellRef {
@@ -75,12 +76,30 @@ const selectEmployeeLookup = createSelector([selectAllEmployees], (employees) =>
   return new Map<EmployeeId, Employee>(employees.map((e) => [e.id, e]));
 });
 
+const selectPendingArg = (
+  _state: RootState,
+  _projectId: ProjectId,
+  pending: ReadonlyMap<BreakdownItemId, readonly EmployeeId[]>,
+) => pending;
+
 export const selectGridForProject = createSelector(
-  [selectTreeForProject, selectAllAllocations, selectEmployeeLookup, selectMonthsForProject],
-  (tree, allocations, employees, months) => buildGrid(tree, allocations, employees, months),
+  [
+    selectTreeForProject,
+    selectAllAllocations,
+    selectEmployeeLookup,
+    selectMonthsForProject,
+    selectPendingArg,
+  ],
+  (tree, allocations, employees, months, pending) =>
+    buildGrid(tree, allocations, employees, months, pending),
 );
 
-const selectUnitArg = (_state: RootState, _projectId: ProjectId, unit: DisplayUnit) => unit;
+const selectUnitArg = (
+  _state: RootState,
+  _projectId: ProjectId,
+  _pending: ReadonlyMap<BreakdownItemId, readonly EmployeeId[]>,
+  unit: DisplayUnit,
+) => unit;
 
 export const selectPeopleLookup = createSelector(
   [selectAllEmployees, selectAllRateRecords],
@@ -121,4 +140,23 @@ export const selectCellPersonMonths = createSelector(
           a.month === cell.month,
       )
       .reduce((acc, a) => acc + a.amount, 0),
+);
+
+// Allocations sitting directly on an item. Non-zero only for leaves.
+export const selectAllocationCountForItem = createSelector(
+  [selectAllAllocations, selectItemIdArg],
+  (allocations, itemId) => allocations.filter((a) => a.breakdownItemId === itemId).length,
+);
+
+// What deleting an item removes: it, its descendants, and every allocation on them.
+export const selectDeleteImpact = createSelector(
+  [selectAllBreakdownItems, selectAllAllocations, selectItemIdArg],
+  (items, allocations, itemId) => {
+    const doomed = descendantIds(items, itemId);
+    doomed.add(itemId);
+    return {
+      items: doomed.size,
+      allocations: allocations.filter((a) => doomed.has(a.breakdownItemId)).length,
+    };
+  },
 );
