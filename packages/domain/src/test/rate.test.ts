@@ -7,7 +7,8 @@ import {
   type RateRecordId,
   month,
 } from "../model";
-import { rateHistory, findRateConflict, rateSlices } from "../rates";
+import { rateHistory, findRateConflict, rateSlices, blendedRate } from "../rates";
+import { roundTo } from "../rounding";
 
 const employeeId = "emp-001" as EmployeeId;
 
@@ -89,5 +90,15 @@ describe("rateSlices", () => {
       [9, 95],
       [5, 100],
     ]);
+  });
+});
+
+describe("blendedRate", () => {
+  const okafor = [rate("r1", "2025-01-01", 80), rate("r2", "2026-03-12", 95)];
+
+  it("weights each rate by its working days", () => {
+    expect(roundTo(blendedRate(okafor, month("2026-03")) ?? 0, 4)).toBe(89.5455); // (8×80 + 14×95) ÷ 22
+    expect(blendedRate(okafor, month("2026-04"))).toBe(95);
+    expect(blendedRate(okafor, month("2024-12"))).toBeNull();
   });
 });

@@ -24,8 +24,7 @@ export interface SeedData {
   readonly projects: readonly Project[];
   readonly breakdownItems: readonly BreakdownItem[];
   readonly allocations: readonly Allocation[];
-  /** Default month range the grid opens on. */
-  readonly horizon: { readonly from: Month; readonly to: Month };
+  readonly horizon: { readonly from: Month; readonly to: Month }; // Default month range the grid opens on.
 }
 
 export function loadSeed(): SeedData {

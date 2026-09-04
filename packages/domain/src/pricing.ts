@@ -1,6 +1,6 @@
 import { workingDaysInMonth } from "./calendar";
 import type { Month, RateRecord, WeeklyHours } from "./model";
-import { rateSlices, type RateSlice } from "./rates";
+import { blendedRate, rateSlices, type RateSlice } from "./rates";
 import { personMonthsToHours } from "./units";
 
 export interface PricedSlice extends RateSlice {
@@ -58,6 +58,6 @@ export function priceAllocation({
     slices,
     cost,
     unpricedDays,
-    blendedRate: hours > 0 && unpricedDays === 0 ? cost / hours : null,
+    blendedRate: blendedRate(rateRecords, month),
   };
 }

@@ -1,14 +1,25 @@
 import { useState } from "react";
-import { UNIT_DECIMALS, type DisplayUnit, type Month, type ProjectId } from "@baseline/domain";
-import { useAppSelector } from "../../store/hooks";
+import {
+  personMonths,
+  toPersonMonths,
+  UNIT_DECIMALS,
+  type DisplayUnit,
+  type GridRow,
+  type Month,
+  type ProjectId,
+} from "@baseline/domain";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
   selectDisplayGridForProject,
   selectMonthsForProject,
   selectPeopleAvailable,
+  selectPeopleLookup,
   selectUnpricedCellKeys,
   type CellRef,
 } from "../../store/selectors";
 import { CellInspector } from "./CellInspector";
+import { allocationSet } from "../../store/allocationsSlice";
+import { CellEditor } from "./CellEditor";
 interface StaffingGridProps {
   readonly projectId: ProjectId;
 }
@@ -49,10 +60,36 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
   const rows = useAppSelector((state) => selectDisplayGridForProject(state, projectId, unit));
   const dp = UNIT_DECIMALS[unit];
 
+  const dispatch = useAppDispatch();
+  const people = useAppSelector(selectPeopleLookup);
+  const [error, setError] = useState<string | null>(null);
+
   const [selected, setSelected] = useState<CellRef | null>(null);
   const selectedItemName = selected
     ? (rows.find((r) => r.kind === "item" && r.item.id === selected.itemId)?.item.name ?? "")
     : "";
+
+  const commit = (row: GridRow & { kind: "person" }, m: Month, text: string) => {
+    const employee = people.employees.get(row.employeeId);
+    try {
+      const pm = toPersonMonths(text.trim() === "" ? 0 : Number(text), unit, {
+        month: m,
+        weeklyHours: employee?.weeklyHours ?? null,
+        rateRecords: people.ratesByEmployee.get(row.employeeId) ?? [],
+      });
+      dispatch(
+        allocationSet({
+          itemId: row.item.id,
+          employeeId: row.employeeId,
+          month: m,
+          amount: personMonths(pm),
+        }),
+      );
+      setError(null);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Invalid value");
+    }
+  };
 
   return (
     <section aria-labelledby="grid-heading">
@@ -109,14 +146,27 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
                 return (
                   <td key={m} aria-selected={isSelected || undefined}>
                     {row.kind === "person" ? (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelected({ itemId: row.item.id, employeeId: row.employeeId, month: m })
-                        }
-                      >
-                        {value || "–"}
-                      </button>
+                      isSelected ? (
+                        <CellEditor
+                          key={`${row.employeeId}|${m}`}
+                          initial={value}
+                          onCommit={(text) => commit(row, m, text)}
+                          onCancel={() => setSelected(null)}
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelected({
+                              itemId: row.item.id,
+                              employeeId: row.employeeId,
+                              month: m,
+                            })
+                          }
+                        >
+                          {value || "–"}
+                        </button>
+                      )
                     ) : (
                       value
                     )}
@@ -138,6 +188,7 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
           onClose={() => setSelected(null)}
         />
       )}
+      {error && <p role="alert">{error}</p>}
     </section>
   );
 }

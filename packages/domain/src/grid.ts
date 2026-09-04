@@ -17,7 +17,7 @@ export interface ItemRow {
   readonly total: number;
 }
 
-/** One person on one leaf. The only kind of row that can be edited. */
+// One person on one leaf. The only kind of row that can be edited.
 export interface PersonRow {
   readonly kind: "person";
   readonly item: BreakdownItem;

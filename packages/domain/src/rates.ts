@@ -81,3 +81,10 @@ export function rateSlices(records: readonly RateRecord[], m: Month): RateSlice[
 
   return slices.filter((slice) => slice.workingDays > 0);
 }
+
+export function blendedRate(records: readonly RateRecord[], m: Month): number | null {
+  const slices = rateSlices(records, m);
+  const days = slices.reduce((acc, s) => acc + s.workingDays, 0);
+  if (days === 0 || slices.some((s) => s.hourlyCost === null)) return null;
+  return slices.reduce((acc, s) => acc + s.workingDays * (s.hourlyCost ?? 0), 0) / days;
+}
