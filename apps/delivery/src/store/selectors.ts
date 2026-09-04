@@ -1,5 +1,6 @@
-import { buildTree, type ProjectId, canMove, type BreakdownItemId  } from "@baseline/domain";
+import { buildTree, type ProjectId, canMove, type BreakdownItemId } from "@baseline/domain";
 import { createSelector } from "@reduxjs/toolkit";
+import { employeesAdapter } from "./peopleSlice";
 import { breakdownItemsAdapter } from "./breakdownItemsSlice";
 import type { RootState } from "./index";
 import { projectsAdapter } from "./projectsSlice";
@@ -25,3 +26,8 @@ export const selectMoveTargets = createSelector(
   [selectAllBreakdownItems, selectItemIdArg],
   (items, itemId) => items.filter((candidate) => canMove(items, itemId, candidate.id).ok),
 );
+
+export const selectPeopleAvailable = (state: RootState) => state.people.available;
+
+export const { selectAll: selectAllEmployees, selectById: selectEmployeeById } =
+  employeesAdapter.getSelectors((state: RootState) => state.people.employees);

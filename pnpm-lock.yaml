@@ -150,12 +150,19 @@ importers:
         specifier: ^19.2.5
         version: 19.2.5(@types/react@19.2.18)
 
-  packages/contracts: {}
+  packages/contracts:
+    dependencies:
+      '@baseline/domain':
+        specifier: workspace:*
+        version: link:../domain
 
   packages/domain: {}
 
   packages/fixtures:
     dependencies:
+      '@baseline/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@baseline/domain':
         specifier: workspace:*
         version: link:../domain

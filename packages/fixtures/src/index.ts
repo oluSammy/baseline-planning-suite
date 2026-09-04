@@ -75,3 +75,5 @@ export function loadSeed(): SeedData {
     },
   };
 }
+
+export * from "./peopleApi";

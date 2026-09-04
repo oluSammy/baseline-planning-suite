@@ -35,6 +35,16 @@ export default tseslint.config(
     files: ["apps/*/src/**/*.{ts,tsx}", "packages/*/src/**/*.{ts,tsx}"],
     rules: {
       "import-x/no-relative-packages": "error",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          ignoreRestSiblings: true,
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
 
@@ -52,6 +62,12 @@ export default tseslint.config(
       [...APP_PACKAGES, "@baseline/fixtures", ...UI_RUNTIME],
       "Domain and contracts are pure: no React, no Redux, no app or fixture code.",
     ),
+  },
+  {
+    files: ["apps/*/src/**/*.{ts,tsx}", "packages/*/src/**/*.{ts,tsx}"],
+    rules: {
+      "import-x/no-relative-packages": "error",
+    },
   },
   prettier,
 );

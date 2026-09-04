@@ -1,4 +1,9 @@
-import { MAX_TREE_DEPTH, type BreakdownItemId, type ProjectId, type TreeNode } from "@baseline/domain";
+import {
+  MAX_TREE_DEPTH,
+  type BreakdownItemId,
+  type ProjectId,
+  type TreeNode,
+} from "@baseline/domain";
 import { useState } from "react";
 import { itemAdded, itemDeleted, itemMoved, itemRenamed } from "../../store/breakdownItemsSlice";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";

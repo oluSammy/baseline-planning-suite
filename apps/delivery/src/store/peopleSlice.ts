@@ -1,17 +1,6 @@
-import type { Project, ProjectId } from "@baseline/domain";
 import type { PeopleSnapshot } from "@baseline/contracts";
 import type { Employee, EmployeeId, RateRecord, RateRecordId } from "@baseline/domain";
 import { createEntityAdapter, createSlice, type PayloadAction } from "@reduxjs/toolkit";
-
-export const projectsAdapter = createEntityAdapter<Project, ProjectId>({
-  selectId: (project) => project.id,
-});
-
-export const projectsSlice = createSlice({
-  name: "projects",
-  initialState: projectsAdapter.getInitialState(),
-  reducers: {},
-});
 
 export const employeesAdapter = createEntityAdapter<Employee, EmployeeId>({
   selectId: (employee) => employee.id,
@@ -22,9 +11,8 @@ export const rateRecordsAdapter = createEntityAdapter<RateRecord, RateRecordId>(
   selectId: (record) => record.id,
 });
 
-// Delivery's read-only copy of what People publishes. Not created
-// persisted: it is refilled from the PeopleApi on every mount.
-// also replaced on every change published through the subscription
+// Delivery's read-only copy of what People publishes
+// updates on mount and also when subscription gets a snapshot
 export const peopleSlice = createSlice({
   name: "people",
   initialState: {
@@ -42,4 +30,4 @@ export const peopleSlice = createSlice({
 });
 
 export const { peopleSnapshotReceived } = peopleSlice.actions;
-export const projectsReducer = projectsSlice.reducer;
+export const peopleReducer = peopleSlice.reducer;
