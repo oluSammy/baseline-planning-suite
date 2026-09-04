@@ -17,6 +17,7 @@ import {
   type Month,
   descendantIds,
   overCapacity,
+  personMonthLoads,
 } from "@baseline/domain";
 import { createSelector } from "@reduxjs/toolkit";
 import { employeesAdapter, rateRecordsAdapter } from "./peopleSlice";
@@ -173,3 +174,6 @@ export const selectItemLabels = createSelector(
     );
   },
 );
+
+/** What Delivery publishes to People: totals per person-month across all projects. */
+export const selectPersonMonthLoads = createSelector([selectAllAllocations], personMonthLoads);

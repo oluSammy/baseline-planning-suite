@@ -2,13 +2,23 @@ import { ModuleFederationPlugin } from "@module-federation/enhanced/webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import path from "node:path";
 
-const SHARED_SINGLETONS = ["react", "react-dom", "react-redux", "@reduxjs/toolkit"];
+const SHARED_SINGLETONS = [
+  "react",
+  "react-dom",
+  "react-redux",
+  "@reduxjs/toolkit",
+  "@baseline/domain",
+  "@baseline/contracts",
+];
 
 function sharedFor(dependencies) {
   return Object.fromEntries(
     SHARED_SINGLETONS.filter((name) => name in dependencies).map((name) => [
       name,
-      { singleton: true, requiredVersion: dependencies[name] },
+      {
+        singleton: true,
+        requiredVersion: name.startsWith("@baseline/") ? false : dependencies[name],
+      },
     ]),
   );
 }

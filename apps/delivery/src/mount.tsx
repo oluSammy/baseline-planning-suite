@@ -1,19 +1,12 @@
 import type { MountFn } from "@baseline/contracts";
-import { loadSeed } from "@baseline/fixtures";
-import { localStorageAdapter } from "@baseline/persistence";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { App } from "./App";
-import { createDeliveryStore, isPersistedState } from "./store";
 import { peopleSnapshotReceived } from "./store/peopleSlice";
-
-const STORAGE_KEY = "baseline.delivery.v1";
+import { getDeliveryStore } from "./store/instance";
 
 export const mount: MountFn = (container, context = {}) => {
-  const store = createDeliveryStore({
-    seed: loadSeed(),
-    persistence: localStorageAdapter(STORAGE_KEY, isPersistedState),
-  });
+  const store = getDeliveryStore();
 
   const unsubscribe = context.people
     ? (() => {

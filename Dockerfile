@@ -16,19 +16,19 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm verify && pnpm build
 
-  # shell
-  FROM nginx:alpine AS shell
-  COPY docker/nginx.shell.conf /etc/nginx/conf.d/default.conf
-  COPY docker/write-shell-config.sh /docker-entrypoint.d/40-write-shell-config.sh
-  RUN chmod +x /docker-entrypoint.d/40-write-shell-config.sh
-  COPY --from=build /repo/apps/shell/dist /usr/share/nginx/html
+# shell
+FROM nginx:alpine AS shell
+COPY docker/nginx.shell.conf /etc/nginx/conf.d/default.conf
+COPY docker/write-shell-config.sh /docker-entrypoint.d/40-write-shell-config.sh
+RUN chmod +x /docker-entrypoint.d/40-write-shell-config.sh
+COPY --from=build /repo/apps/shell/dist /usr/share/nginx/html
 
-  # people
-  FROM nginx:alpine AS people
-  COPY docker/nginx.remote.conf /etc/nginx/conf.d/default.conf
-  COPY --from=build /repo/apps/people/dist /usr/share/nginx/html
+# people
+FROM nginx:alpine AS people
+COPY docker/nginx.remote.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /repo/apps/people/dist /usr/share/nginx/html
 
-  # delivery
-  FROM nginx:alpine AS delivery
-  COPY docker/nginx.remote.conf /etc/nginx/conf.d/default.conf
-  COPY --from=build /repo/apps/delivery/dist /usr/share/nginx/html
+# delivery
+FROM nginx:alpine AS delivery
+COPY docker/nginx.remote.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /repo/apps/delivery/dist /usr/share/nginx/html

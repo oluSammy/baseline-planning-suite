@@ -1,4 +1,4 @@
-import type { MountModule, RemoteName } from "@baseline/contracts";
+import type { MountContext, MountModule, RemoteName } from "@baseline/contracts";
 import { loadRemote } from "@module-federation/enhanced/runtime";
 import { useEffect, useRef, useState } from "react";
 
@@ -9,9 +9,10 @@ type PanelStatus =
 
 interface RemotePanelProps {
   readonly name: RemoteName;
+  readonly context: MountContext;
 }
 
-export function RemotePanel({ name }: RemotePanelProps) {
+export function RemotePanel({ name, context }: RemotePanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<PanelStatus>({ kind: "loading" });
   const [attempt, setAttempt] = useState(0);
@@ -33,7 +34,7 @@ export function RemotePanel({ name }: RemotePanelProps) {
       .then((module) => {
         if (cancelled) return;
         if (!module) throw new Error(`${name}/mount resolved to nothing`);
-        unmount = module.mount(host);
+        unmount = module.mount(host, context);
         setStatus({ kind: "ready" });
       })
       .catch((error: unknown) => {
@@ -48,7 +49,7 @@ export function RemotePanel({ name }: RemotePanelProps) {
       // while it is committing this one.
       setTimeout(() => unmount?.(), 0);
     };
-  }, [name, attempt]);
+  }, [name, context, attempt]);
 
   return (
     <section aria-label={`${name} remote`}>

@@ -10,5 +10,6 @@ export default (_env, argv) =>
     dependencies: pkg.dependencies,
     exposes: {
       "./mount": "./src/mount.tsx",
+      "./api": "./src/api.ts",
     },
   });

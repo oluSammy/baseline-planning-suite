@@ -43,3 +43,13 @@ export interface MountContext {
   readonly people?: PeopleApi;
   readonly allocations?: AllocationsApi;
 }
+
+/** The module People exposes at `./api`. */
+export interface PeopleApiModule {
+  readonly peopleApi: PeopleApi;
+}
+
+/** The module Delivery exposes at `./api`. */
+export interface AllocationsApiModule {
+  readonly allocationsApi: AllocationsApi;
+}
