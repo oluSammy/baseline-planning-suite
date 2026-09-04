@@ -13,6 +13,7 @@ export interface CellEdit {
   readonly employeeId: EmployeeId;
   readonly month: Month;
   readonly amount: PersonMonths;
+  readonly updatedBy?: EmployeeId;
 }
 
 export const allocationsAdapter = createEntityAdapter<Allocation, AllocationId>({
@@ -37,7 +38,7 @@ export const allocationsSlice = createSlice({
         };
       },
       reducer(state, action: PayloadAction<CellEdit & { id: AllocationId; updatedAt: string }>) {
-        const { id, itemId, employeeId, month, amount, updatedAt } = action.payload;
+        const { id, itemId, employeeId, month, amount, updatedAt, updatedBy } = action.payload;
         const existing = selectAll(state).filter(
           (a) => a.breakdownItemId === itemId && a.employeeId === employeeId && a.month === month,
         );
@@ -50,8 +51,9 @@ export const allocationsSlice = createSlice({
           return;
         }
         const [first, ...duplicates] = existing;
+        const stamp = { updatedAt, ...(updatedBy === undefined ? {} : { updatedBy }) };
         if (first) {
-          allocationsAdapter.updateOne(state, { id: first.id, changes: { amount, updatedAt } });
+          allocationsAdapter.updateOne(state, { id: first.id, changes: { amount, ...stamp } });
           allocationsAdapter.removeMany(
             state,
             duplicates.map((a) => a.id),
@@ -64,7 +66,7 @@ export const allocationsSlice = createSlice({
           employeeId,
           month,
           amount,
-          updatedAt,
+          ...stamp,
         });
       },
     },

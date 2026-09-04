@@ -4,7 +4,13 @@ import { BreakdownTree } from "./features/breakdown/BreakdownTree";
 import { ProjectSwitcher } from "./features/projects/ProjectSwitcher";
 import { resetToSeed } from "./store";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import { selectAllEmployees, selectAllProjects, selectPeopleAvailable } from "./store/selectors";
+import {
+  selectActiveUser,
+  selectAllEmployees,
+  selectAllProjects,
+  selectEmployeeById,
+  selectPeopleAvailable,
+} from "./store/selectors";
 import { StaffingGrid } from "./features/grid/StaffingGrid";
 
 export function App() {
@@ -15,6 +21,10 @@ export function App() {
 
   const peopleAvailable = useAppSelector(selectPeopleAvailable);
   const headcount = useAppSelector(selectAllEmployees).length;
+  const activeUser = useAppSelector(selectActiveUser);
+  const activeName = useAppSelector((state) =>
+    activeUser === null ? null : (selectEmployeeById(state, activeUser)?.name ?? activeUser),
+  );
 
   return (
     <main>
@@ -23,6 +33,7 @@ export function App() {
         <button type="button" onClick={() => dispatch(resetToSeed())}>
           Reset to seed
         </button>
+        <p>{activeName === null ? "Nobody signed in" : `Signed in as ${activeName}`}</p>
       </header>
       {peopleAvailable ? (
         <p>{headcount} people from the register</p>

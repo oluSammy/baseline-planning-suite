@@ -57,6 +57,8 @@ export interface Allocation {
   readonly month: Month;
   readonly amount: PersonMonths;
   readonly updatedAt?: string; // ISO timestamp of the last edit. Absent on seeded rows, which count as oldest.
+  /** The active user at the time of the last edit, when the host provided one. */
+  readonly updatedBy?: EmployeeId;
 }
 
 // way to make branded values

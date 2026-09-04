@@ -58,6 +58,9 @@ export const selectMoveTargets = createSelector(
 
 export const selectPeopleAvailable = (state: RootState) => state.people.available;
 
+export const selectCurrency = (state: RootState) => state.host.currency;
+export const selectActiveUser = (state: RootState) => state.host.activeUser;
+
 export const { selectAll: selectAllEmployees, selectById: selectEmployeeById } =
   employeesAdapter.getSelectors((state: RootState) => state.people.employees);
 
@@ -118,9 +121,13 @@ export const selectPeopleLookup = createSelector(
 );
 
 export const selectDisplayGridForProject = createSelector(
-  [selectGridForProject, selectMonthsForProject, selectPeopleLookup, selectUnitArg],
-  (rows, months, people, unit) =>
-    reconcileForDisplay(convertGrid(rows, unit, months, people), months, UNIT_DECIMALS[unit]),
+  [selectGridForProject, selectMonthsForProject, selectPeopleLookup, selectUnitArg, selectCurrency],
+  (rows, months, people, unit, currency) =>
+    reconcileForDisplay(
+      convertGrid(rows, unit, months, people, currency.perEur),
+      months,
+      UNIT_DECIMALS[unit],
+    ),
 );
 
 export const selectUnpricedCellKeys = createSelector(

@@ -117,6 +117,13 @@ describe("convertGrid", () => {
   it("leaves person-months untouched", () => {
     expect(convertGrid(rows, "personMonths", [m1], people)).toEqual(rows);
   });
+
+  it("scales cost by the display currency factor only", () => {
+    const [, personUsd] = convertGrid(rows, "cost", [m1], people, 1.08);
+    expect(personUsd?.cells[m1]).toBeCloseTo(7880 * 1.08, 9);
+    const [, personHours] = convertGrid(rows, "hours", [m1], people, 1.08);
+    expect(personHours?.cells[m1]).toBe(88);
+  });
 });
 
 it("shows pending people as empty rows so they can be edited", () => {

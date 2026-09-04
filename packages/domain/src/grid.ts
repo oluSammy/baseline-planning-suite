@@ -210,6 +210,8 @@ export function convertGrid(
   unit: DisplayUnit,
   months: readonly Month[],
   people: PeopleLookup,
+  /** Display currency per euro. Applies to cost only. 1 shows euros. */
+  costPerEur = 1,
 ): GridRow[] {
   switch (unit) {
     case "personMonths":
@@ -229,17 +231,16 @@ export function convertGrid(
         const employee = people.employees.get(row.employeeId);
         if (!employee) return {};
         const rateRecords = people.ratesByEmployee.get(row.employeeId) ?? [];
-        return mapCells(
-          row.cells,
-          months,
-          (pm, m) =>
-            priceAllocation({
-              personMonths: pm,
-              month: m,
-              weeklyHours: employee.weeklyHours,
-              rateRecords,
-            }).cost,
-        );
+        return mapCells(row.cells, months, (pm, m) => {
+          const { cost } = priceAllocation({
+            personMonths: pm,
+            month: m,
+            weeklyHours: employee.weeklyHours,
+            rateRecords,
+          });
+
+          return cost * costPerEur;
+        });
       });
   }
 }

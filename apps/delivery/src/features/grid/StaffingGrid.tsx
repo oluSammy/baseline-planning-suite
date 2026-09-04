@@ -10,11 +10,14 @@ import {
   type EmployeeId,
   type GridRow,
   type Month,
+  type PeopleLookup,
   type ProjectId,
 } from "@baseline/domain";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
+  selectActiveUser,
   selectAllEmployees,
+  selectCurrency,
   selectDisplayGridForProject,
   selectItemLabels,
   selectMonthsForProject,
@@ -69,6 +72,8 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
     selectDisplayGridForProject(state, projectId, pending, unit),
   );
   const unpriced = useAppSelector((state) => selectUnpricedCellKeys(state, projectId, pending));
+  const currency = useAppSelector(selectCurrency);
+  const activeUser = useAppSelector(selectActiveUser);
   const dp = UNIT_DECIMALS[unit];
 
   const [pending, setPending] = useState<ReadonlyMap<BreakdownItemId, readonly EmployeeId[]>>(
@@ -92,7 +97,9 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
   const commit = (row: GridRow & { kind: "person" }, m: Month, text: string) => {
     const employee = people.employees.get(row.employeeId);
     try {
-      const pm = toPersonMonths(text.trim() === "" ? 0 : Number(text), unit, {
+      const raw = text.trim() === "" ? 0 : Number(text);
+      const inEur = unit === "cost" ? raw / currency.perEur : raw;
+      const pm = toPersonMonths(inEur, unit, {
         month: m,
         weeklyHours: employee?.weeklyHours ?? null,
         rateRecords: people.ratesByEmployee.get(row.employeeId) ?? [],
@@ -103,6 +110,7 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
           employeeId: row.employeeId,
           month: m,
           amount: personMonths(pm),
+          ...(activeUser === null ? {} : { updatedBy: activeUser }),
         }),
       );
       setError(null);
@@ -126,7 +134,7 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
               disabled={(option === "hours" || option === "cost") && !peopleAvailable}
               onChange={() => setUnit(option)}
             />
-            {UNIT_LABELS[option]}
+            {option === "cost" ? currency.code : UNIT_LABELS[option]}
           </label>
         ))}
       </fieldset>
@@ -220,7 +228,8 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
                     {isUnpriced && (
                       <abbr title="Some working days have no rate and are priced at zero">*</abbr>
                     )}
-                    {row.kind === "person" && capacityMarker(row.employeeId, m, over, itemLabels)}
+                    {row.kind === "person" &&
+                      capacityMarker(row.employeeId, m, over, itemLabels, people)}
                   </td>
                 );
               })}
@@ -245,13 +254,20 @@ const capacityMarker = (
   m: Month,
   over: ReadonlyMap<string, CapacityFlag>,
   itemLabels: Map<BreakdownItemId, string>,
+  people: PeopleLookup,
 ) => {
   const flag = over.get(capacityKey(employeeId, m));
   if (!flag) return null;
   const cause = itemLabels.get(flag.culprit.breakdownItemId) ?? "another assignment";
+
+  const editor = flag.culprit.updatedBy
+    ? people.employees.get(flag.culprit.updatedBy)?.name
+    : undefined;
+  const suffix = editor ? `, edited by ${editor}` : "";
+
   return (
     <abbr
-      title={`Over capacity: ${flag.total.toFixed(2)} person-months across all projects. Caused by ${cause}.`}
+      title={`Over capacity: ${flag.total.toFixed(2)} person-months across all projects. Caused by ${cause}${suffix}.`}
     >
       †
     </abbr>

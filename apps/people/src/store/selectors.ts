@@ -50,3 +50,6 @@ export const selectOversubscribedMonths = createSelector(
     return byEmployee;
   },
 );
+
+export const selectCurrency = (state: RootState) => state.host.currency;
+export const selectActiveUser = (state: RootState) => state.host.activeUser;

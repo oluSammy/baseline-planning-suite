@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { resetToSeed, stateFromSeed, type PersistedState, createDeliveryStore } from "../index";
 import { memoryAdapter } from "@baseline/persistence";
 import { peopleSnapshotReceived } from "../peopleSlice";
+import { hostSnapshotReceived } from "../hostSlice";
 
 describe("delivery store persistence", () => {
   const seed = loadSeed();
@@ -48,5 +49,17 @@ describe("delivery store persistence", () => {
     expect(store.getState().people.available).toBe(true);
     expect(store.getState().people.employees.ids).toHaveLength(60);
     expect(adapter.load()).not.toHaveProperty("people");
+  });
+
+  it("holds the host snapshot in memory but never persists it", () => {
+    const adapter = memoryAdapter<PersistedState>();
+    const store = createDeliveryStore({ seed, persistence: adapter });
+
+    store.dispatch(
+      hostSnapshotReceived({ currency: { code: "USD", perEur: 1.08 }, activeUser: null }),
+    );
+
+    expect(store.getState().host.currency.code).toBe("USD");
+    expect(adapter.load()).not.toHaveProperty("host");
   });
 });

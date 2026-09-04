@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { rateAdded, rateCorrected, rateRemoved } from "../../store/rateRecordsSlice";
 import {
   selectCapacityAvailable,
+  selectCurrency,
   selectEmployeeById,
   selectOversubscribedMonths,
   selectRateHistoryFor,
@@ -21,6 +22,9 @@ export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
 
   const months = useAppSelector(selectOversubscribedMonths).get(employeeId) ?? [];
   const capacityAvailable = useAppSelector(selectCapacityAvailable);
+
+  const currency = useAppSelector(selectCurrency);
+  const showConverted = currency.code !== "EUR";
 
   const dispatch = useAppDispatch();
   const [editingId, setEditingId] = useState<RateRecordId | null>(null);
@@ -52,6 +56,7 @@ export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
               <th scope="col">Valid from</th>
               <th scope="col">Until</th>
               <th scope="col">€ / hour</th>
+              {showConverted && <th scope="col">{currency.code} / hour</th>}
               <th scope="col">Actions</th>
             </tr>
           </thead>
@@ -59,7 +64,7 @@ export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
             {periods.map(({ record, validTo }) =>
               editingId === record.id ? (
                 <tr key={record.id}>
-                  <td colSpan={4}>
+                  <td colSpan={showConverted ? 5 : 4}>
                     <RateForm
                       initial={{ validFrom: record.validFrom, hourlyCost: record.hourlyCost }}
                       employeeRecords={records}
@@ -78,6 +83,7 @@ export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
                   <td>{record.validFrom}</td>
                   <td>{validTo ?? "open"}</td>
                   <td>{record.hourlyCost.toFixed(2)}</td>
+                  {showConverted && <td>{(record.hourlyCost * currency.perEur).toFixed(2)}</td>}
                   <td>
                     <button type="button" onClick={() => setEditingId(record.id)}>
                       Correct
@@ -97,7 +103,7 @@ export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
       <RateForm
         employeeRecords={records}
         excludeId={null}
-        submitLabel="Add rate"
+        submitLabel="Add rate (in euros)"
         onSubmit={(value) => dispatch(rateAdded({ employeeId, ...value }))}
       />
 

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useAppSelector } from "../../store/hooks";
 import {
   selectCellPersonMonths,
+  selectCurrency,
   selectOverCapacity,
   selectPeopleLookup,
   type CellRef,
@@ -23,6 +24,7 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
   const employee = people.employees.get(cell.employeeId);
   const rateRecords = people.ratesByEmployee.get(cell.employeeId) ?? [];
   const flag = useAppSelector(selectOverCapacity).get(capacityKey(cell.employeeId, cell.month));
+  const currency = useAppSelector(selectCurrency);
 
   const pricing = useMemo(
     () =>
@@ -122,6 +124,14 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
           </dd>
 
           <dt>Implied blended rate</dt>
+          {currency.code !== "EUR" && (
+            <>
+              <dt>Cost in {currency.code}</dt>
+              <dd>
+                {(pricing.cost * currency.perEur).toFixed(2)} at {currency.perEur} per euro
+              </dd>
+            </>
+          )}
           <dd>
             {pricing.blendedRate === null ? "n/a" : `${euro(roundTo(pricing.blendedRate, 4), 4)}/h`}
           </dd>

@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { allocationsSnapshotReceived } from "./store/capacitySlice";
 import { getPeopleStore } from "./store/instance";
+import { hostSnapshotReceived } from "./store/hostSlice";
 
 export const mount: MountFn = (container, context = {}) => {
   const store = getPeopleStore();
@@ -14,6 +15,13 @@ export const mount: MountFn = (container, context = {}) => {
         return context.allocations.subscribe((snapshot) =>
           store.dispatch(allocationsSnapshotReceived(snapshot)),
         );
+      })()
+    : () => {};
+
+  const unsubscribeHost = context.host
+    ? (() => {
+        store.dispatch(hostSnapshotReceived(context.host.snapshot()));
+        return context.host.subscribe((state) => store.dispatch(hostSnapshotReceived(state)));
       })()
     : () => {};
 
@@ -27,6 +35,7 @@ export const mount: MountFn = (container, context = {}) => {
 
   return () => {
     unsubscribe();
+    unsubscribeHost();
     root.unmount();
   };
 };

@@ -1,5 +1,6 @@
 import type { SeedData } from "@baseline/fixtures";
 import type { PersistenceAdapter } from "@baseline/persistence";
+import { hostReducer } from "./hostSlice";
 import {
   combineReducers,
   configureStore,
@@ -28,6 +29,7 @@ const sliceReducer = combineReducers({
   projects: projectsReducer,
   breakdownItems: breakdownItemsReducer,
   people: peopleReducer,
+  host: hostReducer,
   allocations: allocationsReducer,
 });
 
@@ -35,14 +37,16 @@ export type RootState = ReturnType<typeof sliceReducer>;
 export const resetToSeed = createAction("delivery/resetToSeed");
 
 // this survives a reload, people omitted deliberately
-export type PersistedState = Omit<RootState, "people">;
+// persisted type and stripping
+export type PersistedState = Omit<RootState, "people" | "host">;
 
 function toPersisted(state: RootState): PersistedState {
-  const { people: _people, ...persisted } = state;
+  const { people: _people, host: _host, ...persisted } = state;
   return persisted;
 }
 
 const emptyPeople = () => peopleReducer(undefined, { type: "@@init" });
+const emptyHost = () => hostReducer(undefined, { type: "@@init" });
 
 export function stateFromSeed(seed: SeedData): PersistedState {
   return {
@@ -86,7 +90,11 @@ export function createDeliveryStore({ seed, persistence }: DeliveryStoreOptions)
 
   const rootReducer = (state: RootState | undefined, action: UnknownAction): RootState => {
     if (resetToSeed.match(action)) {
-      return { ...seedState, people: state?.people ?? emptyPeople() };
+      return {
+        ...seedState,
+        people: state?.people ?? emptyPeople(),
+        host: state?.host ?? emptyHost(),
+      };
     }
 
     const next = sliceReducer(state, action);
@@ -123,7 +131,7 @@ export function createDeliveryStore({ seed, persistence }: DeliveryStoreOptions)
 
   return configureStore({
     reducer: rootReducer,
-    preloadedState: { ...persisted, people: emptyPeople() },
+    preloadedState: { ...persisted, people: emptyPeople(), host: emptyHost() },
     middleware: (getDefault) => getDefault().prepend(persist.middleware),
   });
 }

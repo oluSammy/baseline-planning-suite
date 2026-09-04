@@ -10,25 +10,28 @@ import {
 import { employeesAdapter, employeesReducer } from "./employeesSlice";
 import { rateRecordsAdapter, rateRecordsReducer } from "./rateRecordsSlice";
 import { capacityReducer } from "./capacitySlice";
+import { hostReducer } from "./hostSlice";
 
 const sliceReducer = combineReducers({
   employees: employeesReducer,
   rateRecords: rateRecordsReducer,
   capacity: capacityReducer,
+  host: hostReducer,
 });
 
 export type RootState = ReturnType<typeof sliceReducer>;
 export const resetToSeed = createAction("people/resetToSeed");
 
 /** What survives a reload. The Delivery copy is deliberately excluded. */
-export type PersistedState = Omit<RootState, "capacity">;
+export type PersistedState = Omit<RootState, "capacity" | "host">;
 
 function toPersisted(state: RootState): PersistedState {
-  const { capacity: _capacity, ...persisted } = state;
+  const { capacity: _capacity, host: _host, ...persisted } = state;
   return persisted;
 }
 
 const emptyCapacity = () => capacityReducer(undefined, { type: "@@init" });
+const emptyHost = () => hostReducer(undefined, { type: "@@init" });
 
 export function stateFromSeed(seed: SeedData): PersistedState {
   return {
@@ -58,7 +61,7 @@ export function createPeopleStore({ seed, persistence }: PeopleStoreOptions) {
 
   const rootReducer = (state: RootState | undefined, action: UnknownAction): RootState =>
     resetToSeed.match(action)
-      ? { ...seedState, capacity: state?.capacity ?? emptyCapacity() }
+      ? { ...seedState, capacity: state?.capacity ?? emptyCapacity(), host: emptyHost() }
       : sliceReducer(state, action);
 
   const persist = createListenerMiddleware<RootState>();
@@ -71,7 +74,7 @@ export function createPeopleStore({ seed, persistence }: PeopleStoreOptions) {
 
   return configureStore({
     reducer: rootReducer,
-    preloadedState: { ...persisted, capacity: emptyCapacity() },
+    preloadedState: { ...persisted, capacity: emptyCapacity(), host: emptyHost() },
     middleware: (getDefault) => getDefault().prepend(persist.middleware),
   });
 }

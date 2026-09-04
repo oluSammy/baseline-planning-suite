@@ -36,4 +36,18 @@ describe("allocationSet", () => {
     );
     expect(b.ids).toHaveLength(2);
   });
+
+  it("stamps the editor when given and leaves it absent otherwise", () => {
+    const anonymous = allocationsReducer(
+      init,
+      allocationSet({ ...cell, amount: personMonths(0.5) }),
+    );
+    expect(Object.values(anonymous.entities)[0]).not.toHaveProperty("updatedBy");
+
+    const signed = allocationsReducer(
+      anonymous,
+      allocationSet({ ...cell, amount: personMonths(0.6), updatedBy: "emp-009" as EmployeeId }),
+    );
+    expect(Object.values(signed.entities)[0]?.updatedBy).toBe("emp-009");
+  });
 });
