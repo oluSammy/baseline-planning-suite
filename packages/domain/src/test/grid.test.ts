@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGrid, reconcileForDisplay, type PersonRow } from "../grid";
+import { buildGrid, convertGrid, type PersonRow } from "../grid";
 import {
   month,
   personMonths,
@@ -73,22 +73,20 @@ describe("buildGrid", () => {
   });
 });
 
-describe("reconcileForDisplay", () => {
-  it("rounds person rows with largest remainder and sums derived rows from displayed values", () => {
-    const tree = buildTree([item("p", null), item("leaf", "p")], project);
-    const allocations = [
-      alloc("a1", "leaf", "e1", m1, 0.125),
-      alloc("a2", "leaf", "e1", m2, 0.125),
-    ];
-    const [parent, leaf, person] = reconcileForDisplay(
-      buildGrid(tree, allocations, employees, [m1, m2]),
-      [m1, m2],
-      2,
-    );
+describe("convertGrid", () => {
+  const tree = buildTree([item("leaf", null)], project);
+  const rows = buildGrid(tree, [alloc("a1", "leaf", "e1", m1, 0.5)], employees, [m1]);
 
-    expect(person?.cells).toEqual({ [m1]: 0.13, [m2]: 0.12 });
-    expect(person?.total).toBe(0.25);
-    expect(leaf?.cells).toEqual(person?.cells);
-    expect(parent?.total).toBe(0.25);
+  it("converts person rows and re-derives parents in hours and percent", () => {
+    const [leafHours, personHours] = convertGrid(rows, "hours", [m1], employees);
+    expect(personHours?.cells[m1]).toBe(88);
+    expect(leafHours?.cells[m1]).toBe(88);
+
+    const [, personPercent] = convertGrid(rows, "percent", [m1], employees);
+    expect(personPercent?.cells[m1]).toBe(50);
+  });
+
+  it("leaves person-months untouched", () => {
+    expect(convertGrid(rows, "personMonths", [m1], employees)).toEqual(rows);
   });
 });

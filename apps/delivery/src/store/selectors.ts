@@ -8,6 +8,9 @@ import {
   monthsBetween,
   type Employee,
   type EmployeeId,
+  convertGrid,
+  UNIT_DECIMALS,
+  type DisplayUnit,
 } from "@baseline/domain";
 import { createSelector } from "@reduxjs/toolkit";
 import { employeesAdapter } from "./peopleSlice";
@@ -16,8 +19,6 @@ import type { RootState } from "./index";
 import { projectsAdapter } from "./projectsSlice";
 import { allocationsAdapter } from "./allocationsSlice";
 import { reconcileForDisplay } from "@baseline/domain";
-
-const PERSON_MONTH_DECIMALS = 2;
 
 const selectItemIdArg = (_state: RootState, itemId: BreakdownItemId) => itemId;
 
@@ -64,7 +65,10 @@ export const selectGridForProject = createSelector(
   (tree, allocations, employees, months) => buildGrid(tree, allocations, employees, months),
 );
 
+const selectUnitArg = (_state: RootState, _projectId: ProjectId, unit: DisplayUnit) => unit;
+
 export const selectDisplayGridForProject = createSelector(
-  [selectGridForProject, selectMonthsForProject],
-  (rows, months) => reconcileForDisplay(rows, months, PERSON_MONTH_DECIMALS),
+  [selectGridForProject, selectMonthsForProject, selectEmployeeLookup, selectUnitArg],
+  (rows, months, employees, unit) =>
+    reconcileForDisplay(convertGrid(rows, unit, months, employees), months, UNIT_DECIMALS[unit]),
 );

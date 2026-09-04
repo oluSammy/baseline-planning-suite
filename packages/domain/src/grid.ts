@@ -1,6 +1,7 @@
 import type { Allocation, BreakdownItem, Employee, EmployeeId, Month } from "./model";
 import type { TreeNode } from "./tree";
 import { largestRemainder, roundTo } from "./rounding";
+import { personMonthsToHours, personMonthsToPercent, type DisplayUnit } from "./units";
 
 // Person-months per month. Missing month means no allocation.
 export type MonthCells = Partial<Record<Month, number>>;
@@ -22,12 +23,6 @@ export interface PersonRow {
   readonly depth: number;
   readonly employeeId: EmployeeId;
   readonly label: string;
-  readonly cells: MonthCells;
-  readonly total: number;
-}
-
-export interface DisplayRow {
-  readonly row: GridRow;
   readonly cells: MonthCells;
   readonly total: number;
 }
@@ -123,41 +118,98 @@ export function buildGrid(
 }
 
 // person rows are rounded with largest remainder so their cells add
-// to their rounded total
+// to their rounded total, derived rows are sums of displayed values.
 export function reconcileForDisplay(
   rows: readonly GridRow[],
   months: readonly Month[],
   dp: number,
-): DisplayRow[] {
+): GridRow[] {
+  return rederive(
+    rows,
+    months,
+    (row) => {
+      const rounded = largestRemainder(
+        months.map((m) => row.cells[m] ?? 0),
+        dp,
+      );
+      return Object.fromEntries(
+        months
+          .map((m, index) => [m, rounded[index] ?? 0] as const)
+          .filter(([m]) => row.cells[m] !== undefined),
+      );
+    },
+    (value) => roundTo(value, dp),
+  );
+}
+
+// Rebuilds a grid bottom-up: person rows get new cells from `personCells`
+// every derived row becomes the sum of its (new) children, and every
+// total the sum of its (new) cells. `finish` runs on each derived sum
+function rederive(
+  rows: readonly GridRow[],
+  months: readonly Month[],
+  personCells: (row: PersonRow) => MonthCells,
+  finish: (value: number) => number = (value) => value,
+): GridRow[] {
   const contributions = new Map<BreakdownItem["id"], MonthCells[]>();
   const push = (key: BreakdownItem["id"], cells: MonthCells) => {
     contributions.set(key, [...(contributions.get(key) ?? []), cells]);
   };
 
-  const out: DisplayRow[] = [];
+  const out: GridRow[] = [];
   for (let i = rows.length - 1; i >= 0; i -= 1) {
     const row = rows[i];
     if (!row) continue;
 
     let cells: MonthCells;
     if (row.kind === "person") {
-      const rounded = largestRemainder(
-        months.map((m) => row.cells[m] ?? 0),
-        dp,
-      );
-      cells = Object.fromEntries(months.map((m, index) => [m, rounded[index] ?? 0]));
+      cells = personCells(row);
       push(row.item.id, cells);
     } else {
       const summed = sumCells(contributions.get(row.item.id) ?? [], months);
-      cells = Object.fromEntries(months.map((m) => [m, roundTo(summed[m] ?? 0, dp)]));
+      cells = Object.fromEntries(
+        months.filter((m) => summed[m] !== undefined).map((m) => [m, finish(summed[m] ?? 0)]),
+      );
       if (row.item.parentId !== null) push(row.item.parentId, cells);
     }
 
-    const total = roundTo(
-      months.reduce((acc, m) => acc + (cells[m] ?? 0), 0),
-      dp,
-    );
-    out[i] = { row, cells, total };
+    out[i] = { ...row, cells, total: finish(totalOf(cells, months)) };
+  }
+  return out;
+}
+
+// converts a person-month grid into the requested unit, exactly, without rounding.
+export function convertGrid(
+  rows: readonly GridRow[],
+  unit: DisplayUnit,
+  months: readonly Month[],
+  employees: ReadonlyMap<EmployeeId, Employee>,
+): GridRow[] {
+  switch (unit) {
+    case "personMonths":
+      return [...rows];
+    case "percent":
+      return rederive(rows, months, (row) => mapCells(row.cells, months, personMonthsToPercent));
+    case "hours":
+      return rederive(rows, months, (row) => {
+        const employee = employees.get(row.employeeId);
+        if (!employee) return {};
+        return mapCells(row.cells, months, (pm, m) =>
+          personMonthsToHours(pm, employee.weeklyHours, m),
+        );
+      });
+  }
+}
+
+function mapCells(
+  cells: MonthCells,
+  months: readonly Month[],
+  fn: (value: number, m: Month) => number,
+): MonthCells {
+  const out: MonthCells = {};
+  for (const m of months) {
+    const value = cells[m];
+    if (value !== undefined) out[m] = fn(value, m);
   }
   return out;
 }

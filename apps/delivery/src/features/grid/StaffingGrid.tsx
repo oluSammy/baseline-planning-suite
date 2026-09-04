@@ -1,10 +1,20 @@
-import type { Month, ProjectId } from "@baseline/domain";
+import { useState } from "react";
+import { UNIT_DECIMALS, type DisplayUnit, type Month, type ProjectId } from "@baseline/domain";
 import { useAppSelector } from "../../store/hooks";
-import { selectDisplayGridForProject, selectMonthsForProject } from "../../store/selectors";
-
+import {
+  selectDisplayGridForProject,
+  selectMonthsForProject,
+  selectPeopleAvailable,
+} from "../../store/selectors";
 interface StaffingGridProps {
   readonly projectId: ProjectId;
 }
+
+const UNIT_LABELS: Readonly<Record<DisplayUnit, string>> = {
+  personMonths: "PM",
+  hours: "Hours",
+  percent: "%",
+};
 
 const MONTH_NAMES = [
   "Jan",
@@ -29,11 +39,30 @@ function formatMonth(month: Month): string {
 
 export function StaffingGrid({ projectId }: StaffingGridProps) {
   const months = useAppSelector((state) => selectMonthsForProject(state, projectId));
-  const displayRows = useAppSelector((state) => selectDisplayGridForProject(state, projectId));
+  const [unit, setUnit] = useState<DisplayUnit>("personMonths");
+  const peopleAvailable = useAppSelector(selectPeopleAvailable);
+  const rows = useAppSelector((state) => selectDisplayGridForProject(state, projectId, unit));
+  const dp = UNIT_DECIMALS[unit];
 
   return (
     <section aria-labelledby="grid-heading">
       <h2 id="grid-heading">Staffing</h2>
+      <fieldset>
+        <legend>Unit</legend>
+        {(Object.keys(UNIT_LABELS) as DisplayUnit[]).map((option) => (
+          <label key={option}>
+            <input
+              type="radio"
+              name="unit"
+              value={option}
+              checked={unit === option}
+              disabled={option === "hours" && !peopleAvailable}
+              onChange={() => setUnit(option)}
+            />
+            {UNIT_LABELS[option]}
+          </label>
+        ))}
+      </fieldset>
       <table>
         <thead>
           <tr>
@@ -47,7 +76,7 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
           </tr>
         </thead>
         <tbody>
-          {displayRows.map(({ row, cells, total }) => (
+          {rows.map((row) => (
             <tr key={row.kind === "item" ? row.item.id : `${row.item.id}:${row.employeeId}`}>
               <th scope="row" style={{ paddingLeft: `${row.depth - 1}rem` }}>
                 {row.kind === "item" ? (
@@ -59,9 +88,9 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
                 )}
               </th>
               {months.map((m) => (
-                <td key={m}>{row.cells[m] === undefined ? "" : cells[m]?.toFixed(2)}</td>
+                <td key={m}>{row.cells[m] === undefined ? "" : row.cells[m].toFixed(dp)}</td>
               ))}
-              <td>{total.toFixed(2)}</td>
+              <td>{row.total.toFixed(dp)}</td>
             </tr>
           ))}
         </tbody>

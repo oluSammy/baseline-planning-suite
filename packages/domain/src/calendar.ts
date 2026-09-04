@@ -28,3 +28,14 @@ export function monthsBetween(from: Month, to: Month): Month[] {
   }
   return result;
 }
+
+export function workingDaysInMonth(m: Month): number {
+  const [year, mon] = m.split("-").map(Number) as [number, number];
+  const daysInMonth = new Date(Date.UTC(year, mon, 0)).getUTCDate();
+  let count = 0;
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const weekday = new Date(Date.UTC(year, mon - 1, day)).getUTCDay();
+    if (weekday !== 0 && weekday !== 6) count += 1;
+  }
+  return count;
+}
