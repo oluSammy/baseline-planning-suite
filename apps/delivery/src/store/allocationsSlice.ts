@@ -28,11 +28,16 @@ export const allocationsSlice = createSlice({
     // Sets one cell. Zero clears it. A cell is one person on one leaf in one month.
     allocationSet: {
       prepare(edit: CellEdit) {
-        return { payload: { id: crypto.randomUUID() as AllocationId, ...edit } };
+        return {
+          payload: {
+            id: crypto.randomUUID() as AllocationId,
+            updatedAt: new Date().toISOString(),
+            ...edit,
+          },
+        };
       },
-      reducer(state, action: PayloadAction<CellEdit & { id: AllocationId }>) {
-        const { id, itemId, employeeId, month, amount } = action.payload;
-        const { selectAll } = allocationsAdapter.getSelectors();
+      reducer(state, action: PayloadAction<CellEdit & { id: AllocationId; updatedAt: string }>) {
+        const { id, itemId, employeeId, month, amount, updatedAt } = action.payload;
         const existing = selectAll(state).filter(
           (a) => a.breakdownItemId === itemId && a.employeeId === employeeId && a.month === month,
         );
@@ -46,7 +51,7 @@ export const allocationsSlice = createSlice({
         }
         const [first, ...duplicates] = existing;
         if (first) {
-          allocationsAdapter.updateOne(state, { id: first.id, changes: { amount } });
+          allocationsAdapter.updateOne(state, { id: first.id, changes: { amount, updatedAt } });
           allocationsAdapter.removeMany(
             state,
             duplicates.map((a) => a.id),
@@ -59,6 +64,7 @@ export const allocationsSlice = createSlice({
           employeeId,
           month,
           amount,
+          updatedAt,
         });
       },
     },

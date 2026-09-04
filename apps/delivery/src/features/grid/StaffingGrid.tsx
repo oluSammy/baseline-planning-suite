@@ -1,9 +1,11 @@
 import { useState } from "react";
 import {
+  capacityKey,
   personMonths,
   toPersonMonths,
   UNIT_DECIMALS,
   type BreakdownItemId,
+  type CapacityFlag,
   type DisplayUnit,
   type EmployeeId,
   type GridRow,
@@ -14,7 +16,9 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
   selectAllEmployees,
   selectDisplayGridForProject,
+  selectItemLabels,
   selectMonthsForProject,
+  selectOverCapacity,
   selectPeopleAvailable,
   selectPeopleLookup,
   selectUnpricedCellKeys,
@@ -59,6 +63,8 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
   const months = useAppSelector((state) => selectMonthsForProject(state, projectId));
   const [unit, setUnit] = useState<DisplayUnit>("personMonths");
   const peopleAvailable = useAppSelector(selectPeopleAvailable);
+  const over = useAppSelector(selectOverCapacity);
+  const itemLabels = useAppSelector(selectItemLabels);
   const rows = useAppSelector((state) =>
     selectDisplayGridForProject(state, projectId, pending, unit),
   );
@@ -124,6 +130,7 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
           </label>
         ))}
       </fieldset>
+      {error && <p role="alert">{error}</p>}
       <table>
         <thead>
           <tr>
@@ -213,6 +220,7 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
                     {isUnpriced && (
                       <abbr title="Some working days have no rate and are priced at zero">*</abbr>
                     )}
+                    {row.kind === "person" && capacityMarker(row.employeeId, m, over, itemLabels)}
                   </td>
                 );
               })}
@@ -228,7 +236,24 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
           onClose={() => setSelected(null)}
         />
       )}
-      {error && <p role="alert">{error}</p>}
     </section>
   );
 }
+
+const capacityMarker = (
+  employeeId: EmployeeId,
+  m: Month,
+  over: ReadonlyMap<string, CapacityFlag>,
+  itemLabels: Map<BreakdownItemId, string>,
+) => {
+  const flag = over.get(capacityKey(employeeId, m));
+  if (!flag) return null;
+  const cause = itemLabels.get(flag.culprit.breakdownItemId) ?? "another assignment";
+  return (
+    <abbr
+      title={`Over capacity: ${flag.total.toFixed(2)} person-months across all projects. Caused by ${cause}.`}
+    >
+      †
+    </abbr>
+  );
+};

@@ -1,9 +1,20 @@
 import { loadSeed } from "@baseline/fixtures";
-import type { BreakdownItemId, EmployeeId, Month, TreeNode } from "@baseline/domain";
+import {
+  capacityKey,
+  type BreakdownItemId,
+  type EmployeeId,
+  type Month,
+  type TreeNode,
+} from "@baseline/domain";
 import { memoryAdapter } from "@baseline/persistence";
 import { describe, expect, it } from "vitest";
 import { createDeliveryStore } from "../index";
-import { selectAllProjects, selectCellPersonMonths, selectTreeForProject } from "../selectors";
+import {
+  selectAllProjects,
+  selectCellPersonMonths,
+  selectOverCapacity,
+  selectTreeForProject,
+} from "../selectors";
 
 describe("delivery selectors", () => {
   const state = createDeliveryStore({ seed: loadSeed(), persistence: memoryAdapter() }).getState();
@@ -29,5 +40,14 @@ describe("delivery selectors", () => {
       month: "2026-03" as Month,
     };
     expect(selectCellPersonMonths(state, cell)).toBe(0.5);
+  });
+
+  it("flags the seed's planted over-capacity person-months across projects", () => {
+    const flags = selectOverCapacity(state);
+    expect(flags.get(capacityKey("emp-003" as EmployeeId, "2026-06" as Month))?.total).toBeCloseTo(
+      1.18,
+      12,
+    );
+    expect(flags.size).toBe(6);
   });
 });

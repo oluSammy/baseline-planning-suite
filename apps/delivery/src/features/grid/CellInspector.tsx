@@ -1,7 +1,12 @@
-import { personMonthsToPercent, priceAllocation, roundTo } from "@baseline/domain";
+import { capacityKey, personMonthsToPercent, priceAllocation, roundTo } from "@baseline/domain";
 import { useMemo } from "react";
 import { useAppSelector } from "../../store/hooks";
-import { selectCellPersonMonths, selectPeopleLookup, type CellRef } from "../../store/selectors";
+import {
+  selectCellPersonMonths,
+  selectOverCapacity,
+  selectPeopleLookup,
+  type CellRef,
+} from "../../store/selectors";
 
 interface CellInspectorProps {
   readonly cell: CellRef;
@@ -17,6 +22,7 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
   const people = useAppSelector(selectPeopleLookup);
   const employee = people.employees.get(cell.employeeId);
   const rateRecords = people.ratesByEmployee.get(cell.employeeId) ?? [];
+  const flag = useAppSelector(selectOverCapacity).get(capacityKey(cell.employeeId, cell.month));
 
   const pricing = useMemo(
     () =>
@@ -41,7 +47,6 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
           Close
         </button>
       </header>
-
       {!employee || !pricing ? (
         <p role="status">People register unavailable, so this cell cannot be priced.</p>
       ) : (
@@ -110,6 +115,11 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
 
           <dt>Same cell in % of capacity</dt>
           <dd>{personMonthsToPercent(personMonths).toFixed(1)}%</dd>
+
+          <dt>Across all projects</dt>
+          <dd>
+            {flag ? `${flag.total.toFixed(2)} person-months, over capacity` : "within capacity"}
+          </dd>
 
           <dt>Implied blended rate</dt>
           <dd>

@@ -16,6 +16,7 @@ import {
   type RateRecord,
   type Month,
   descendantIds,
+  overCapacity,
 } from "@baseline/domain";
 import { createSelector } from "@reduxjs/toolkit";
 import { employeesAdapter, rateRecordsAdapter } from "./peopleSlice";
@@ -158,5 +159,17 @@ export const selectDeleteImpact = createSelector(
       items: doomed.size,
       allocations: allocations.filter((a) => doomed.has(a.breakdownItemId)).length,
     };
+  },
+);
+
+export const selectOverCapacity = createSelector([selectAllAllocations], overCapacity);
+
+export const selectItemLabels = createSelector(
+  [selectAllBreakdownItems, selectAllProjects],
+  (items, projects) => {
+    const projectNames = new Map(projects.map((p) => [p.id, p.name]));
+    return new Map(
+      items.map((i) => [i.id, `${projectNames.get(i.projectId) ?? i.projectId} › ${i.name}`]),
+    );
   },
 );

@@ -6,3 +6,4 @@ export * from "./grid";
 export * from "./rounding";
 export * from "./units";
 export * from "./pricing";
+export * from "./capacity";
