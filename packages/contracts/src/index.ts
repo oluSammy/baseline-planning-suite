@@ -1,4 +1,4 @@
-import type { Employee, RateRecord } from "@baseline/domain";
+import type { Employee, PersonMonthLoad, RateRecord } from "@baseline/domain";
 
 // Contracts between the three Baseline apps. Types and names only.
 // so that the apps depend on this package and never on each other
@@ -27,4 +27,19 @@ export type MountFn = (container: HTMLElement, context?: MountContext) => () => 
 // The module a remote exposes at `./mount`
 export interface MountModule {
   readonly mount: MountFn;
+}
+
+/** What Delivery publishes: per person-month totals across all projects. Never its work breakdown. */
+export interface AllocationsSnapshot {
+  readonly loads: readonly PersonMonthLoad[];
+}
+
+export interface AllocationsApi {
+  snapshot(): AllocationsSnapshot;
+  subscribe(listener: (snapshot: AllocationsSnapshot) => void): () => void;
+}
+
+export interface MountContext {
+  readonly people?: PeopleApi;
+  readonly allocations?: AllocationsApi;
 }

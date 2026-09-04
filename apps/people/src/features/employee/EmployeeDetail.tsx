@@ -2,7 +2,12 @@ import type { EmployeeId, RateRecordId } from "@baseline/domain";
 import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { rateAdded, rateCorrected, rateRemoved } from "../../store/rateRecordsSlice";
-import { selectEmployeeById, selectRateHistoryFor } from "../../store/selectors";
+import {
+  selectCapacityAvailable,
+  selectEmployeeById,
+  selectOversubscribedMonths,
+  selectRateHistoryFor,
+} from "../../store/selectors";
 import { RateForm } from "./RateForm";
 
 interface EmployeeDetailProps {
@@ -13,6 +18,9 @@ interface EmployeeDetailProps {
 export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
   const employee = useAppSelector((state) => selectEmployeeById(state, employeeId));
   const periods = useAppSelector((state) => selectRateHistoryFor(state, employeeId));
+
+  const months = useAppSelector(selectOversubscribedMonths).get(employeeId) ?? [];
+  const capacityAvailable = useAppSelector(selectCapacityAvailable);
 
   const dispatch = useAppDispatch();
   const [editingId, setEditingId] = useState<RateRecordId | null>(null);
@@ -92,6 +100,21 @@ export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
         submitLabel="Add rate"
         onSubmit={(value) => dispatch(rateAdded({ employeeId, ...value }))}
       />
+
+      <h3>Capacity</h3>
+      {!capacityAvailable ? (
+        <p role="status">Staffing data unavailable, so capacity cannot be shown.</p>
+      ) : months.length === 0 ? (
+        <p>Within capacity in every month.</p>
+      ) : (
+        <ul>
+          {months.map(({ month, total }) => (
+            <li key={month}>
+              {month}: {total.toFixed(2)} person-months across all projects
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

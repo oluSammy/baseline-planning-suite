@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { capacityKey, overCapacity } from "../capacity";
+import { capacityKey, isOverCapacity, overCapacity, personMonthLoads } from "../capacity";
 import {
   month,
   personMonths,
@@ -45,5 +45,14 @@ describe("overCapacity", () => {
   it("falls back to the last seeded row when nothing has been edited", () => {
     const flags = overCapacity([alloc("first", "x", 0.7), alloc("last", "y", 0.7)]);
     expect(flags.get(capacityKey(emp, june))?.culprit.id).toBe("last");
+  });
+});
+
+describe("personMonthLoads", () => {
+  it("sums per person-month and leaves the over-capacity decision to isOverCapacity", () => {
+    const loads = personMonthLoads([alloc("a", "x", 0.6), alloc("b", "y", 0.6)]);
+    expect(loads).toEqual([{ employeeId: emp, month: june, total: 1.2 }]);
+    expect(isOverCapacity(1.2)).toBe(true);
+    expect(isOverCapacity(1)).toBe(false);
   });
 });

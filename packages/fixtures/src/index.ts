@@ -76,3 +76,4 @@ export function loadSeed(): SeedData {
 }
 
 export * from "./peopleApi";
+export * from "./allocationsApi";

@@ -9,31 +9,32 @@ import {
 } from "@reduxjs/toolkit";
 import { employeesAdapter, employeesReducer } from "./employeesSlice";
 import { rateRecordsAdapter, rateRecordsReducer } from "./rateRecordsSlice";
+import { capacityReducer } from "./capacitySlice";
 
 const sliceReducer = combineReducers({
   employees: employeesReducer,
   rateRecords: rateRecordsReducer,
+  capacity: capacityReducer,
 });
 
 export type RootState = ReturnType<typeof sliceReducer>;
 export const resetToSeed = createAction("people/resetToSeed");
 
-export function stateFromSeed(seed: SeedData): RootState {
+/** What survives a reload. The Delivery copy is deliberately excluded. */
+export type PersistedState = Omit<RootState, "capacity">;
+
+function toPersisted(state: RootState): PersistedState {
+  const { capacity: _capacity, ...persisted } = state;
+  return persisted;
+}
+
+const emptyCapacity = () => capacityReducer(undefined, { type: "@@init" });
+
+export function stateFromSeed(seed: SeedData): PersistedState {
   return {
     employees: employeesAdapter.setAll(employeesAdapter.getInitialState(), seed.employees),
     rateRecords: rateRecordsAdapter.setAll(rateRecordsAdapter.getInitialState(), seed.rateRecords),
   };
-}
-
-export function isPersistedState(value: unknown): value is RootState {
-  if (typeof value !== "object" || value === null) return false;
-  const candidate = value as { employees?: unknown; rateRecords?: unknown };
-  return hasEntityShape(candidate.employees) && hasEntityShape(candidate.rateRecords);
-}
-
-interface PeopleStoreOptions {
-  readonly seed: SeedData;
-  readonly persistence: PersistenceAdapter<RootState>;
 }
 
 function hasEntityShape(value: unknown): boolean {
@@ -41,21 +42,36 @@ function hasEntityShape(value: unknown): boolean {
   return Array.isArray((value as { ids?: unknown }).ids);
 }
 
+export function isPersistedState(value: unknown): value is PersistedState {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as { employees?: unknown; rateRecords?: unknown };
+  return hasEntityShape(candidate.employees) && hasEntityShape(candidate.rateRecords);
+}
+
+interface PeopleStoreOptions {
+  readonly seed: SeedData;
+  readonly persistence: PersistenceAdapter<PersistedState>;
+}
+
 export function createPeopleStore({ seed, persistence }: PeopleStoreOptions) {
   const seedState = stateFromSeed(seed);
 
   const rootReducer = (state: RootState | undefined, action: UnknownAction): RootState =>
-    resetToSeed.match(action) ? seedState : sliceReducer(state, action);
+    resetToSeed.match(action)
+      ? { ...seedState, capacity: state?.capacity ?? emptyCapacity() }
+      : sliceReducer(state, action);
 
   const persist = createListenerMiddleware<RootState>();
   persist.startListening({
     predicate: () => true,
-    effect: (_action, api) => persistence.save(api.getState()),
+    effect: (_action, api) => persistence.save(toPersisted(api.getState())),
   });
+
+  const persisted = persistence.load() ?? seedState;
 
   return configureStore({
     reducer: rootReducer,
-    preloadedState: persistence.load() ?? seedState,
+    preloadedState: { ...persisted, capacity: emptyCapacity() },
     middleware: (getDefault) => getDefault().prepend(persist.middleware),
   });
 }
