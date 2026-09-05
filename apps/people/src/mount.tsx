@@ -1,3 +1,6 @@
+import "@baseline/theme/tokens.css";
+import "@baseline/theme/base.css";
+
 import type { MountFn } from "@baseline/contracts";
 import { Provider } from "react-redux";
 import { createRoot } from "react-dom/client";

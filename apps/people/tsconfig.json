@@ -1,4 +1,4 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src", "../../packages/persistence/src/index.ts", "../../tooling/css.d.ts"]
+  "include": ["src", "../../tooling/css.d.ts"]
 }
