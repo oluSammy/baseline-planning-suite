@@ -82,17 +82,13 @@ Boundaries are enforced by tooling, ESLint forbids any app importing another
 app, and forbids React, Redux, or app code inside `domain` and `contracts`. The domain package
 cannot reference `window`, because its TypeScript config has no DOM library.
 
-## Decisions
-
-The brief leaves five things to the candidate. Here is what was chosen and why.
-
-### Who computes cost: Delivery, from People's rate records
+## Who computes cost: Delivery, from People's rate records
 
 Delivery needs to show what a month of someone's work costs. To do that it needs two things: how many
 hours the person works that month, which Delivery knows, and what that person costs per hour, which
 People knows. There are two ways to get the answer.
 
-This is the decision the brief says it assesses. People could have exposed "what does this
+People could have exposed "what does this
 cost?" and Delivery could have asked. Instead People publishes its rate records through
 `PeopleApi` (snapshot plus subscribe, read-only), and Delivery prices its own grid with the
 pure functions in `@baseline/domain`.

@@ -2,7 +2,6 @@ import type { DisplayCurrency, HostState } from "@baseline/contracts";
 import type { EmployeeId } from "@baseline/domain";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-/** Fixed demo rates. A real deployment would fetch these; the brief does not score it. */
 export const CURRENCIES: readonly DisplayCurrency[] = [
   { code: "EUR", perEur: 1 },
   { code: "USD", perEur: 1.08 },

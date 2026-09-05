@@ -18,7 +18,6 @@ interface CellInspectorProps {
 const euro = (value: number, dp = 2) => `€${value.toFixed(dp)}`;
 const hours = (value: number) => `${value.toFixed(2)} h`;
 
-/** The brief's Figure 4 for one cell: every intermediate the pricing rule produces. */
 export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
   const personMonths = useAppSelector((state) => selectCellPersonMonths(state, cell));
   const people = useAppSelector(selectPeopleLookup);
