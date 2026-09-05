@@ -6,8 +6,8 @@ services:
     ports:
       - "8080:80"
     environment:
-      PEOPLE_REMOTE_URL: http://localhost:8080/people/remoteEntry.js
-      DELIVERY_REMOTE_URL: http://localhost:8080/delivery/remoteEntry.js
+      PEOPLE_REMOTE_URL: http://localhost:8080/remotes/people/remoteEntry.js
+      DELIVERY_REMOTE_URL: http://localhost:8080/remotes/delivery/remoteEntry.js
 
   people:
     build:
