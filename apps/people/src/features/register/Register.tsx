@@ -37,10 +37,18 @@ export function Register({ onSelect }: RegisterProps) {
       <table className="people-table">
         <thead>
           <tr>
-            <th scope="col" className="eyebrow">Name</th>
-            <th scope="col" className="eyebrow">Role</th>
-            <th scope="col" className="eyebrow">Hours / week</th>
-            <th scope="col" className="eyebrow">Capacity</th>
+            <th scope="col" className="eyebrow">
+              Name
+            </th>
+            <th scope="col" className="eyebrow">
+              Role
+            </th>
+            <th scope="col" className="eyebrow num">
+              Hours / week
+            </th>
+            <th scope="col" className="eyebrow">
+              Capacity
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -49,7 +57,11 @@ export function Register({ onSelect }: RegisterProps) {
             return (
               <tr key={employee.id}>
                 <td>
-                  <button type="button" className="link-button" onClick={() => onSelect(employee.id)}>
+                  <button
+                    type="button"
+                    className="link-button"
+                    onClick={() => onSelect(employee.id)}
+                  >
                     {employee.name}
                   </button>
                 </td>

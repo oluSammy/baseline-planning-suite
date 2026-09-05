@@ -81,7 +81,7 @@ export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
                 <th scope="col" className="eyebrow">
                   Until
                 </th>
-                <th scope="col" className="eyebrow">
+                <th scope="col" className="eyebrow num">
                   € / hour
                 </th>
                 {showConverted && (
