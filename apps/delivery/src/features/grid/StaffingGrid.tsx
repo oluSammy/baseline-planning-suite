@@ -270,7 +270,8 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
                                 *
                               </abbr>
                             )}
-                            {capacityMarker(row.employeeId, m, over, itemLabels, people)}
+                            {value !== "" &&
+                              capacityMarker(row.employeeId, m, over, itemLabels, people)}
                           </button>
                         )
                       ) : (
