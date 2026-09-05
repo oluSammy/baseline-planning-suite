@@ -463,10 +463,16 @@
 
 /* Cell inspector */
 
+/* Sticks to the bottom of the viewport while the grid is taller than the screen, so the
+   working for a clicked cell is visible immediately; settles into place at the column's end. */
 .delivery-inspector {
+  position: sticky;
+  bottom: 12px;
+  z-index: 1;
   margin-top: 14px;
   max-width: 920px;
   padding: 12px 16px;
+  box-shadow: var(--shadow-2);
 }
 
 .delivery-inspector-head {
