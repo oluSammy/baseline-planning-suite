@@ -1,3 +1,4 @@
+import "./people.css";
 import { useState } from "react";
 import type { EmployeeId } from "@baseline/domain";
 import { Register } from "./features/register/Register";

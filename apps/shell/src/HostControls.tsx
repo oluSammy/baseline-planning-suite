@@ -40,7 +40,7 @@ export function HostControls({ peopleApi }: HostControlsProps) {
         </select>
       </label>
       <label>
-        Active user
+        Editing as
         <select
           className="field"
           value={activeUser ?? ""}

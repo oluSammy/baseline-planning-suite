@@ -1,3 +1,4 @@
+import "./delivery.css";
 import type { ProjectId } from "@baseline/domain";
 import { useState } from "react";
 import { BreakdownTree } from "./features/breakdown/BreakdownTree";
