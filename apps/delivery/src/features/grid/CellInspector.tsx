@@ -18,6 +18,7 @@ interface CellInspectorProps {
 const euro = (value: number, dp = 2) => `€${value.toFixed(dp)}`;
 const hours = (value: number) => `${value.toFixed(2)} h`;
 
+/** The brief's Figure 4 for one cell: every intermediate the pricing rule produces. */
 export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
   const personMonths = useAppSelector((state) => selectCellPersonMonths(state, cell));
   const people = useAppSelector(selectPeopleLookup);
@@ -39,25 +40,30 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
     [employee, personMonths, cell.month, rateRecords],
   );
 
+  const unpricedTone = pricing && pricing.unpricedDays > 0 ? " delivery-tone-info" : "";
+
   return (
-    <aside aria-labelledby="inspector-heading">
-      <header>
+    <aside className="card delivery-inspector" aria-labelledby="inspector-heading">
+      <div className="delivery-inspector-head">
         <h3 id="inspector-heading">
           {employee?.name ?? cell.employeeId} · {itemName} · {cell.month}
         </h3>
-        <button type="button" onClick={onClose}>
+        <span className="delivery-spacer" />
+        <button type="button" className="delivery-inspector-close" onClick={onClose}>
           Close
         </button>
-      </header>
+      </div>
       {!employee || !pricing ? (
-        <p role="status">People register unavailable, so this cell cannot be priced.</p>
+        <p role="status" className="notice-info">
+          This cell cannot be priced while the People register is unavailable.
+        </p>
       ) : (
-        <dl>
+        <dl className="delivery-inspector-list">
           <dt>Inputs</dt>
-          <dd>
+          <dd className="num">
             {employee.weeklyHours} h/week. Rates:{" "}
             {rateRecords.length === 0
-              ? "none"
+              ? "none on record"
               : [...rateRecords]
                   .sort((a, b) => a.validFrom.localeCompare(b.validFrom))
                   .map((r) => `${euro(r.hourlyCost)}/h from ${r.validFrom}`)
@@ -66,38 +72,38 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
           </dd>
 
           <dt>Working days in {cell.month}</dt>
-          <dd>{pricing.workingDays}</dd>
+          <dd className="num">{pricing.workingDays}</dd>
 
           <dt>Slices</dt>
-          <dd>
-            <ul>
-              {pricing.slices.map((slice) => (
-                <li key={slice.from}>
-                  {slice.from} to {slice.to}: {slice.workingDays} working days at{" "}
-                  {slice.hourlyCost === null ? "no rate" : `${euro(slice.hourlyCost)}/h`}
-                </li>
-              ))}
-            </ul>
+          <dd className={`num${unpricedTone}`}>
+            {pricing.slices
+              .map(
+                (slice) =>
+                  `${slice.from} to ${slice.to}: ${slice.workingDays} working days at ${
+                    slice.hourlyCost === null ? "no rate" : `${euro(slice.hourlyCost)}/h`
+                  }`,
+              )
+              .join("; ")}
           </dd>
 
           <dt>One person-month</dt>
-          <dd>
+          <dd className="num">
             {employee.weeklyHours} × {pricing.workingDays} ÷ 5 = {hours(pricing.personMonthHours)}
           </dd>
 
           <dt>This allocation in hours</dt>
-          <dd>
+          <dd className="num">
             {personMonths.toFixed(2)} × {pricing.personMonthHours.toFixed(2)} ={" "}
             {hours(pricing.hours)}
           </dd>
 
           <dt>Hours per working day</dt>
-          <dd>
+          <dd className="num">
             {pricing.hours.toFixed(2)} ÷ {pricing.workingDays} = {hours(pricing.hoursPerWorkingDay)}
           </dd>
 
           <dt>Cost</dt>
-          <dd>
+          <dd className={`num${unpricedTone}`}>
             {pricing.slices
               .map((slice) =>
                 slice.hourlyCost === null
@@ -116,21 +122,22 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
           </dd>
 
           <dt>Same cell in % of capacity</dt>
-          <dd>{personMonthsToPercent(personMonths).toFixed(1)}%</dd>
+          <dd className="num">{personMonthsToPercent(personMonths).toFixed(1)}%</dd>
 
           <dt>Across all projects</dt>
-          <dd>
+          <dd className={`num${flag ? " delivery-tone-over" : ""}`}>
             {flag ? `${flag.total.toFixed(2)} person-months, over capacity` : "within capacity"}
           </dd>
 
           <dt>Implied blended rate</dt>
-          <dd>
+          <dd className="num">
             {pricing.blendedRate === null ? "n/a" : `${euro(roundTo(pricing.blendedRate, 4), 4)}/h`}
           </dd>
+
           {currency.code !== "EUR" && (
             <>
               <dt>Cost in {currency.code}</dt>
-              <dd>
+              <dd className="num">
                 {(pricing.cost * currency.perEur).toFixed(2)} at {currency.perEur} per euro
               </dd>
             </>
