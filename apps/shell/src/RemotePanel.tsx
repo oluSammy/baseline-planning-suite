@@ -1,5 +1,5 @@
 import type { MountContext, MountModule, RemoteName } from "@baseline/contracts";
-import { loadRemote } from "@module-federation/enhanced/runtime";
+import { loadRemote, registerRemotes } from "@module-federation/enhanced/runtime";
 import { useEffect, useRef, useState } from "react";
 
 type PanelStatus =
@@ -9,10 +9,12 @@ type PanelStatus =
 
 interface RemotePanelProps {
   readonly name: RemoteName;
+  /** The remoteEntry URL this remote was registered with, needed to re-register on retry. */
+  readonly entry: string;
   readonly context: MountContext;
 }
 
-export function RemotePanel({ name, context }: RemotePanelProps) {
+export function RemotePanel({ name, entry, context }: RemotePanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<PanelStatus>({ kind: "loading" });
   const [attempt, setAttempt] = useState(0);
@@ -29,6 +31,13 @@ export function RemotePanel({ name, context }: RemotePanelProps) {
     let cancelled = false;
     let unmount: (() => void) | undefined;
     setStatus({ kind: "loading" });
+
+    // The federation runtime memoises a failed remote entry. A retry must
+    // re-register the remote to clear that cache, or it would fail again
+    // without a single network request.
+    if (attempt > 0) {
+      registerRemotes([{ name, entry }], { force: true });
+    }
 
     loadRemote<MountModule>(`${name}/mount`)
       .then((module) => {
@@ -49,15 +58,20 @@ export function RemotePanel({ name, context }: RemotePanelProps) {
       // while it is committing this one.
       setTimeout(() => unmount?.(), 0);
     };
-  }, [name, context, attempt]);
+  }, [name, entry, context, attempt]);
+
+  const label = name === "people" ? "People" : "Delivery";
 
   return (
-    <section aria-label={`${name} remote`}>
-      {status.kind === "loading" && <p className="shell-panel-loading">Loading {name}…</p>}
+    <section aria-label={`${label} remote`}>
+      {status.kind === "loading" && <p className="shell-panel-loading">Loading {label}…</p>}
       {status.kind === "failed" && (
         <div className="shell-panel-failed" role="alert">
-          <h2>{name} is unavailable</h2>
-          <p>The remote could not be loaded. The rest of Baseline keeps working.</p>
+          <h2>{label} is unavailable</h2>
+          <p>
+            The remote could not be loaded. The rest of Baseline keeps working. You can switch apps
+            in the header, and your data is safe.
+          </p>
           <pre>{status.message}</pre>
           <button type="button" className="btn-primary" onClick={() => setAttempt((n) => n + 1)}>
             Retry

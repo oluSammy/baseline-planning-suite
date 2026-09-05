@@ -51,7 +51,11 @@ async function start(): Promise<void> {
 
   createRoot(container).render(
     <Provider store={store}>
-      <App contexts={contexts} peopleApi={peopleModule?.peopleApi ?? null} />
+      <App
+        contexts={contexts}
+        entries={config.remotes}
+        peopleApi={peopleModule?.peopleApi ?? null}
+      />
     </Provider>,
   );
 }

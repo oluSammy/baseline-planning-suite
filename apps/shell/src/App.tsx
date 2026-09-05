@@ -20,10 +20,11 @@ function remoteForPath(pathname: string): RemoteName {
 
 interface AppProps {
   readonly contexts: Readonly<Record<RemoteName, MountContext>>;
+  readonly entries: Readonly<Record<RemoteName, string>>;
   readonly peopleApi: PeopleApi | null;
 }
 
-export function App({ contexts, peopleApi }: AppProps) {
+export function App({ contexts, entries, peopleApi }: AppProps) {
   const [pathname, setPathname] = useState(window.location.pathname);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export function App({ contexts, peopleApi }: AppProps) {
         <div className="shell-spacer" />
         <HostControls peopleApi={peopleApi} />
       </header>
-      <RemotePanel name={active} context={contexts[active]} />
+      <RemotePanel name={active} entry={entries[active]} context={contexts[active]} />
     </div>
   );
 }

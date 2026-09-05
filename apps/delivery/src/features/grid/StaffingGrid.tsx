@@ -96,6 +96,9 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [selected, setSelected] = useState<CellRef | null>(null);
+  // Selection drives the inspector; editing is the input. A commit ends editing
+  // but keeps the selection so the inspector shows the new value.
+  const [editing, setEditing] = useState(false);
   const selectedItemName = selected
     ? (rows.find((r) => r.kind === "item" && r.item.id === selected.itemId)?.item.name ?? "")
     : "";
@@ -120,6 +123,7 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
         }),
       );
       setError(null);
+      setEditing(false);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Invalid value");
     }
@@ -242,24 +246,25 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
                       aria-selected={isSelected || undefined}
                     >
                       {row.kind === "person" ? (
-                        isSelected ? (
+                        isSelected && editing ? (
                           <CellEditor
                             key={`${row.employeeId}|${m}`}
                             initial={value}
                             onCommit={(text) => commit(row, m, text)}
-                            onCancel={() => setSelected(null)}
+                            onCancel={() => setEditing(false)}
                           />
                         ) : (
                           <button
                             type="button"
                             className="delivery-cell-button"
-                            onClick={() =>
+                            onClick={() => {
                               setSelected({
                                 itemId: row.item.id,
                                 employeeId: row.employeeId,
                                 month: m,
-                              })
-                            }
+                              });
+                              setEditing(true);
+                            }}
                           >
                             {value || "–"}
                             {isUnpriced && (
@@ -291,7 +296,10 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
         <CellInspector
           cell={selected}
           itemName={selectedItemName}
-          onClose={() => setSelected(null)}
+          onClose={() => {
+            setSelected(null);
+            setEditing(false);
+          }}
         />
       )}
     </section>

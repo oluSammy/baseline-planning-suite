@@ -61,7 +61,11 @@ export function createPeopleStore({ seed, persistence }: PeopleStoreOptions) {
 
   const rootReducer = (state: RootState | undefined, action: UnknownAction): RootState =>
     resetToSeed.match(action)
-      ? { ...seedState, capacity: state?.capacity ?? emptyCapacity(), host: emptyHost() }
+      ? {
+          ...seedState,
+          capacity: state?.capacity ?? emptyCapacity(),
+          host: state?.host ?? emptyHost(),
+        }
       : sliceReducer(state, action);
 
   const persist = createListenerMiddleware<RootState>();
