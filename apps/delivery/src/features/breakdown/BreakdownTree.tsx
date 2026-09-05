@@ -7,21 +7,30 @@ import {
 import { useState } from "react";
 import { itemAdded, itemDeleted, itemMoved, itemRenamed } from "../../store/breakdownItemsSlice";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { selectMoveTargets, selectTreeForProject } from "../../store/selectors";
-import { selectAllocationCountForItem, selectDeleteImpact } from "../../store/selectors";
+import {
+  selectAllocationCountForItem,
+  selectDeleteImpact,
+  selectMoveTargets,
+  selectTreeForProject,
+} from "../../store/selectors";
 
 interface BreakdownTreeProps {
   readonly projectId: ProjectId;
 }
 
+/** Sentinel option value for "move to root", since an empty value is the placeholder. */
+const ROOT_TARGET = "__root__";
+
 export function BreakdownTree({ projectId }: BreakdownTreeProps) {
   const tree = useAppSelector((state) => selectTreeForProject(state, projectId));
 
   return (
-    <section aria-labelledby="breakdown-heading">
-      <h2 id="breakdown-heading">Work breakdown</h2>
+    <section className="card delivery-tree" aria-labelledby="breakdown-heading">
+      <h2 id="breakdown-heading" className="eyebrow">
+        Work breakdown
+      </h2>
       <NameForm
-        label="Add work package"
+        placeholder="New root work package"
         onSubmit={(name) => ({ projectId, parentId: null, name })}
       />
       {tree.length === 0 ? (
@@ -60,98 +69,128 @@ function TreeItem({ node, projectId }: { readonly node: TreeNode; readonly proje
   const [mode, setMode] = useState<"view" | "rename" | "add" | "confirmDelete">("view");
   const [notice, setNotice] = useState<string | null>(null);
 
+  const deleteQuestion = [
+    `Delete ${node.item.name}`,
+    impact.items > 1 ? ` and ${impact.items - 1} sub-item${impact.items === 2 ? "" : "s"}` : "",
+    impact.allocations > 0
+      ? `, removing ${impact.allocations} allocation${impact.allocations === 1 ? "" : "s"}`
+      : "",
+    "?",
+  ].join("");
+
   return (
     <li>
-      {mode === "rename" ? (
-        <InlineInput
-          initial={node.item.name}
-          submitLabel="Save"
-          onSubmit={(name) => {
-            dispatch(itemRenamed({ id: node.item.id, name }));
-            setMode("view");
-          }}
-          onCancel={() => setMode("view")}
-        />
-      ) : (
-        <span>{node.item.name}</span>
-      )}
+      <div className="delivery-tree-row">
+        {mode === "rename" && (
+          <InlineInput
+            initial={node.item.name}
+            placeholder="New name"
+            submitLabel="Save"
+            onSubmit={(name) => {
+              dispatch(itemRenamed({ id: node.item.id, name }));
+              setMode("view");
+            }}
+            onCancel={() => setMode("view")}
+          />
+        )}
 
-      {mode === "view" && (
-        <span role="toolbar" aria-label={`${node.item.name} actions`}>
-          <button type="button" onClick={() => setMode("rename")}>
-            Rename
-          </button>
-          {canHaveChildren && (
-            <button type="button" onClick={() => setMode("add")}>
-              Add child
-            </button>
-          )}
-          <label>
-            Move to
-            <select
-              value=""
-              onChange={(event) => {
-                const value = event.target.value;
-                dispatch(
-                  itemMoved({
-                    id: node.item.id,
-                    parentId: value === "" ? null : (value as BreakdownItemId),
-                  }),
+        {mode === "add" && (
+          <InlineInput
+            initial=""
+            placeholder="Name of new child"
+            submitLabel="Add"
+            onSubmit={(name) => {
+              dispatch(itemAdded({ projectId, parentId: node.item.id, name }));
+              if (allocationsHere > 0) {
+                setNotice(
+                  `${allocationsHere} allocation${allocationsHere === 1 ? "" : "s"} moved from ${node.item.name} to ${name}.`,
                 );
-              }}
+              }
+              setMode("view");
+            }}
+            onCancel={() => setMode("view")}
+          />
+        )}
+
+        {mode === "confirmDelete" && (
+          <div
+            className="delivery-tree-confirm"
+            role="alertdialog"
+            aria-label={`Delete ${node.item.name}`}
+          >
+            <span>{deleteQuestion}</span>
+            <button
+              type="button"
+              className="btn-danger"
+              onClick={() => dispatch(itemDeleted(node.item.id))}
             >
-              <option value="">(root)</option>
-              {targets.map((target) => (
-                <option key={target.id} value={target.id}>
-                  {target.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="button" onClick={() => setMode("confirmDelete")}>
-            Delete
-          </button>
-        </span>
-      )}
-      {mode === "confirmDelete" && (
-        <span role="alertdialog" aria-label={`Delete ${node.item.name}`}>
-          Delete {node.item.name}
-          {impact.items > 1 && ` and ${impact.items - 1} sub-item${impact.items === 2 ? "" : "s"}`}
-          {impact.allocations > 0 &&
-            `, removing ${impact.allocations} allocation${impact.allocations === 1 ? "" : "s"}`}
-          ?
-          <button type="button" onClick={() => dispatch(itemDeleted(node.item.id))}>
-            Confirm
-          </button>
-          <button type="button" onClick={() => setMode("view")}>
-            Cancel
-          </button>
-        </span>
-      )}
+              Confirm
+            </button>
+            <button type="button" className="btn-secondary" onClick={() => setMode("view")}>
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {mode === "view" && (
+          <>
+            <span className="delivery-tree-name">{node.item.name}</span>
+            <span className="delivery-spacer" />
+            <span role="toolbar" aria-label={`${node.item.name} actions`}>
+              <button
+                type="button"
+                className="delivery-tree-tool"
+                onClick={() => setMode("rename")}
+              >
+                Rename
+              </button>
+              {canHaveChildren && (
+                <button type="button" className="delivery-tree-tool" onClick={() => setMode("add")}>
+                  Add child
+                </button>
+              )}
+              <select
+                className="delivery-tree-move"
+                aria-label={`Move ${node.item.name} to`}
+                value=""
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (value === "") return;
+                  dispatch(
+                    itemMoved({
+                      id: node.item.id,
+                      parentId: value === ROOT_TARGET ? null : (value as BreakdownItemId),
+                    }),
+                  );
+                }}
+              >
+                <option value="">Move to…</option>
+                <option value={ROOT_TARGET}>(root)</option>
+                {targets.map((target) => (
+                  <option key={target.id} value={target.id}>
+                    {target.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="delivery-tree-tool delivery-tree-tool--danger"
+                onClick={() => setMode("confirmDelete")}
+              >
+                Delete
+              </button>
+            </span>
+          </>
+        )}
+      </div>
+
       {notice && (
-        <p role="status">
-          {notice}{" "}
+        <p role="status" className="notice-warning delivery-notice">
+          <span>{notice}</span>
           <button type="button" onClick={() => setNotice(null)}>
             Dismiss
           </button>
         </p>
-      )}
-
-      {mode === "add" && (
-        <InlineInput
-          initial=""
-          submitLabel="Add"
-          onSubmit={(name) => {
-            dispatch(itemAdded({ projectId, parentId: node.item.id, name }));
-            if (allocationsHere > 0) {
-              setNotice(
-                `${allocationsHere} allocation${allocationsHere === 1 ? "" : "s"} moved from ${node.item.name} to ${name}.`,
-              );
-            }
-            setMode("view");
-          }}
-          onCancel={() => setMode("view")}
-        />
       )}
 
       {node.children.length > 0 && <TreeList nodes={node.children} projectId={projectId} />}
@@ -161,11 +200,13 @@ function TreeItem({ node, projectId }: { readonly node: TreeNode; readonly proje
 
 function InlineInput({
   initial,
+  placeholder,
   submitLabel,
   onSubmit,
   onCancel,
 }: {
   readonly initial: string;
+  readonly placeholder: string;
   readonly submitLabel: string;
   readonly onSubmit: (value: string) => void;
   readonly onCancel: () => void;
@@ -173,14 +214,24 @@ function InlineInput({
   const [value, setValue] = useState(initial);
   return (
     <form
+      className="delivery-tree-edit"
       onSubmit={(event) => {
         event.preventDefault();
         if (value.trim() !== "") onSubmit(value.trim());
       }}
     >
-      <input value={value} onChange={(event) => setValue(event.target.value)} autoFocus />
-      <button type="submit">{submitLabel}</button>
-      <button type="button" onClick={onCancel}>
+      <input
+        className="field"
+        aria-label={placeholder}
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        autoFocus
+      />
+      <button type="submit" className="btn-primary">
+        {submitLabel}
+      </button>
+      <button type="button" className="btn-secondary" onClick={onCancel}>
         Cancel
       </button>
     </form>
@@ -188,16 +239,17 @@ function InlineInput({
 }
 
 function NameForm({
-  label,
+  placeholder,
   onSubmit,
 }: {
-  readonly label: string;
+  readonly placeholder: string;
   readonly onSubmit: (name: string) => Parameters<typeof itemAdded>[0];
 }) {
   const dispatch = useAppDispatch();
   const [name, setName] = useState("");
   return (
     <form
+      className="delivery-tree-add"
       onSubmit={(event) => {
         event.preventDefault();
         if (name.trim() === "") return;
@@ -205,11 +257,16 @@ function NameForm({
         setName("");
       }}
     >
-      <label>
-        {label}
-        <input value={name} onChange={(event) => setName(event.target.value)} />
-      </label>
-      <button type="submit">Add</button>
+      <input
+        className="field"
+        aria-label={placeholder}
+        placeholder={placeholder}
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+      />
+      <button type="submit" className="btn-secondary">
+        Add
+      </button>
     </form>
   );
 }

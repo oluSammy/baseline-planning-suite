@@ -1,0 +1,203 @@
+.delivery-page {
+  padding: 22px var(--s-7);
+}
+
+.delivery-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: var(--s-1);
+}
+
+.delivery-title-row h1 {
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 700;
+}
+
+.delivery-signed,
+.delivery-status {
+  font-size: 12px;
+  color: var(--n-500);
+}
+
+.delivery-status--unavailable {
+  padding: 2px var(--s-2);
+  border: 1px solid var(--info-border);
+  border-radius: var(--r-xs);
+  background: var(--info-soft);
+  color: var(--info-ink);
+}
+
+.delivery-spacer {
+  flex: 1;
+}
+
+.delivery-reset {
+  height: 24px;
+  padding: 0 var(--s-2);
+  border: none;
+  background: none;
+  font-size: 11.5px;
+  color: var(--n-500);
+  text-decoration: underline;
+}
+
+.delivery-project-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 14px;
+  font-size: 12px;
+  color: var(--n-500);
+}
+
+.delivery-project-row .field {
+  height: 30px;
+}
+
+.delivery-columns {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--s-5);
+}
+
+.delivery-column-tree {
+  flex: 0 0 460px;
+}
+
+.delivery-column-grid {
+  flex: 1;
+  min-width: 640px;
+}
+
+/* Work breakdown tree */
+
+.delivery-tree {
+  padding: 12px 14px;
+}
+
+.delivery-tree .eyebrow {
+  margin-bottom: var(--s-2);
+}
+
+.delivery-tree-add {
+  display: flex;
+  gap: var(--s-2);
+  margin-bottom: 10px;
+}
+
+.delivery-tree-add .field {
+  flex: 1;
+}
+
+.delivery-tree ul ul {
+  padding-left: 18px;
+}
+
+.delivery-tree-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: 26px;
+  padding: 3px var(--s-1);
+  border-bottom: 1px solid var(--n-100);
+}
+
+.delivery-tree-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--n-700);
+}
+
+.delivery-tree-row .delivery-spacer {
+  flex: 1;
+}
+
+.delivery-tree-tool {
+  padding: 1px 5px;
+  border: none;
+  background: none;
+  font-size: 11.5px;
+  color: var(--n-500);
+}
+
+.delivery-tree-tool:hover {
+  color: var(--n-700);
+}
+
+.delivery-tree-tool--danger {
+  color: var(--danger);
+}
+
+.delivery-tree-move {
+  height: 22px;
+  max-width: 86px;
+  padding: 0 var(--s-1);
+  border: 1px solid var(--n-200);
+  border-radius: var(--r-xs);
+  background: var(--n-0);
+  font-size: 11px;
+  color: var(--n-500);
+}
+
+.delivery-tree-edit {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.delivery-tree-edit .field {
+  flex: 1;
+  height: 24px;
+  border-color: var(--brand-400);
+  border-radius: var(--r-xs);
+  font-size: 12px;
+}
+
+.delivery-tree-edit .btn-primary,
+.delivery-tree-edit .btn-secondary {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--r-xs);
+  font-size: 11.5px;
+}
+
+.delivery-tree-confirm {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--s-1);
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.delivery-tree-confirm span {
+  flex: 1;
+}
+
+.delivery-tree-confirm .btn-secondary {
+  height: 24px;
+  padding: 0 var(--s-2);
+  border-radius: var(--r-xs);
+  font-size: 11.5px;
+}
+
+.delivery-notice {
+  margin: 0 0 10px;
+  max-width: 760px;
+}
+
+.delivery-notice span {
+  flex: 1;
+}
+
+.delivery-notice button {
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--warning-ink);
+}

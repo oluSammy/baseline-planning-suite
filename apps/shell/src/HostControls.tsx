@@ -42,7 +42,7 @@ export function HostControls({ peopleApi }: HostControlsProps) {
       <label>
         Active user
         <select
-        className="field"
+          className="field"
           value={activeUser ?? ""}
           disabled={!peopleApi}
           onChange={(event) =>

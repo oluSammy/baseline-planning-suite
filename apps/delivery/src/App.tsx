@@ -27,26 +27,37 @@ export function App() {
   );
 
   return (
-    <main className="baseline">
-      <header>
+    <main className="baseline delivery-page">
+      <div className="delivery-title-row">
         <h1>Delivery</h1>
-        <button type="button" onClick={() => dispatch(resetToSeed())}>
+        <span className="delivery-signed">
+          {activeName === null ? "Nobody signed in" : `Signed in as ${activeName}`}
+        </span>
+        {peopleAvailable ? (
+          <span className="delivery-status">{headcount} people from the register</span>
+        ) : (
+          <span role="status" className="delivery-status delivery-status--unavailable">
+            People register unavailable. Staffing will show IDs only.
+          </span>
+        )}
+        <div className="delivery-spacer" />
+        <button type="button" className="delivery-reset" onClick={() => dispatch(resetToSeed())}>
           Reset to seed
         </button>
-        <p>{activeName === null ? "Nobody signed in" : `Signed in as ${activeName}`}</p>
-      </header>
-      {peopleAvailable ? (
-        <p>{headcount} people from the register</p>
-      ) : (
-        <p role="status">People register unavailable. Staffing will show IDs only.</p>
-      )}
+      </div>
       {active === null ? (
         <p>No projects.</p>
       ) : (
         <>
           <ProjectSwitcher value={active} onChange={setProjectId} />
-          <BreakdownTree projectId={active} />
-          <StaffingGrid projectId={active} />
+          <div className="delivery-columns">
+            <div className="delivery-column-tree">
+              <BreakdownTree projectId={active} />
+            </div>
+            <div className="delivery-column-grid">
+              <StaffingGrid projectId={active} />
+            </div>
+          </div>
         </>
       )}
     </main>
