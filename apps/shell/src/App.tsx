@@ -38,7 +38,7 @@ export function App({ contexts, peopleApi }: AppProps) {
   const active = remoteForPath(pathname);
 
   return (
-    <>
+    <div className="baseline">
       <header>
         <h1>Baseline</h1>
         <nav aria-label="Primary">
@@ -59,6 +59,6 @@ export function App({ contexts, peopleApi }: AppProps) {
         <HostControls peopleApi={peopleApi} />
       </header>
       <RemotePanel name={active} context={contexts[active]} />
-    </>
+    </div>
   );
 }

@@ -1,0 +1,59 @@
+:root {
+  --font-sans: "Raleway", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Brand: one red. 500 is the accent, 600 hover, 50 soft. */
+  --brand-50: #fff1f0;
+  --brand-400: #f44a3d;
+  --brand-500: #e11900;
+  --brand-600: #c01400;
+  --brand-700: #970f00;
+
+  /* Neutrals */
+  --n-0: #ffffff;
+  --n-50: #f8f8f8;
+  --n-100: #eff0f2;
+  --n-200: #e2e2e5;
+  --n-300: #dedada;
+  --n-400: #b4b4b4;
+  --n-500: #838488;
+  --n-600: #5e6065;
+  --n-700: #363636;
+  --n-800: #232323;
+
+  /* Status */
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --info: #0d6cf2;
+  --info-soft: #dbeafe;
+  --info-border: #b6d4fe;
+  --info-ink: #0a4fb0;
+  --warning-soft: #fef3c7;
+  --warning-border: #f2d89b;
+  --warning-ink: #7a4b00;
+  /* Over-capacity tone: darker than warning so it reads next to numbers. */
+  --over: #9a5b00;
+
+  /* Spacing, 4pt */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 28px;
+  --s-8: 32px;
+
+  /* Radii */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+
+  /* Elevation and focus */
+  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-focus: 0 0 0 3px rgba(225, 25, 0, 0.3);
+
+  /* Motion */
+  --motion-base: 150ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}

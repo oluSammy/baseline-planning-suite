@@ -16,7 +16,7 @@ export function App() {
   );
 
   return (
-    <main>
+    <main className="baseline">
       <header>
         <h1>People</h1>
         <button type="button" onClick={() => dispatch(resetToSeed())}>

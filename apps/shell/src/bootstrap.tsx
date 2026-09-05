@@ -1,3 +1,6 @@
+import "@baseline/theme/tokens.css";
+import "@baseline/theme/base.css";
+
 import { registerRemotes, loadRemote } from "@module-federation/enhanced/runtime";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";

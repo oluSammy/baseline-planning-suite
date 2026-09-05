@@ -60,6 +60,10 @@ export function createAppConfig({
             },
           },
         },
+        {
+          test: /\.css$/i,
+          use: ["style-loader", "css-loader"],
+        },
       ],
     },
     plugins: [
