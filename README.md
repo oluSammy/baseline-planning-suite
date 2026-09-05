@@ -20,14 +20,14 @@ schedules and never import each other's source:
 docker compose up --build
 ```
 
-| URL                                     | What                                           |
-| --------------------------------------- | ---------------------------------------------- |
-| http://localhost:8080                   | The suite: shell hosting People and Delivery   |
-| http://localhost:8080/people, /delivery | Deep links into either app                     |
-| http://localhost:8081                   | People standalone, same build                  |
-| http://localhost:8082                   | Delivery standalone, same build                |
-| http://localhost:8080/remotes/people/   | People standalone through the shell's nginx    |
-| http://localhost:8080/config.json       | The remote URLs the shell resolved at start-up |
+| URL                                                                            | What                                           |
+| ------------------------------------------------------------------------------ | ---------------------------------------------- |
+| [http://localhost:8080](http://localhost:8080)                                 | The suite: shell hosting People and Delivery   |
+| [http://localhost:8080/people](http://localhost:8080/people), /delivery        | Deep links into either app                     |
+| [http://localhost:8081](http://localhost:8081)                                 | People standalone, same build                  |
+| [http://localhost:8082](http://localhost:8082)                                 | Delivery standalone, same build                |
+| [http://localhost:8080/remotes/people/](http://localhost:8080/remotes/people/) | People standalone through the shell's nginx    |
+| [http://localhost:8080/config.json](http://localhost:8080/config.json)         | The remote URLs the shell resolved at start-up |
 
 Edits are saved in the browser and survive a reload. Each app has a **Reset to seed** button
 that restores the shipped sample data for that app.
@@ -38,16 +38,16 @@ so `localhost:8080` and `localhost:8081` keep separate data.
 
 The shell must stay alive and say so in place of the panel. Three ways to prove it:
 
-1. **A query parameter.** Open http://localhost:8080/delivery?break=people (or
+1. **A query parameter.** Open [http://localhost:8080/delivery?break=people](http://localhost:8080/delivery?break=people) (or
    `?break=delivery`). The panel shows "Delivery is unavailable" with the error. the header, the other
    app, and your data are untouched.
-2. **A real outage.** `docker compose stop people`, then reload http://localhost:8080/people.
+2. **A real outage.** `docker compose stop people`, then reload [http://localhost:8080/people](http://localhost:8080/people).
    Same panel. Switch to Delivery: it loads, the title row shows "People register unavailable",
    person rows show employee IDs instead of names, and the Hours and cost units are disabled
    because they need rates. Person-months and percent still edit. `docker compose start people`
    and reload brings everything back.
 3. **A wrong URL at runtime.** Change `PEOPLE_REMOTE_URL` in `docker-compose.yml` to any bad
-   path and `docker compose up -d` without `--build`. People fails to load;
+   path and `docker compose up -d` without `--build`.
 
 ## Repository map
 
@@ -97,28 +97,32 @@ cost?" and Delivery could have asked. Instead People publishes its rate records 
 `PeopleApi` (snapshot plus subscribe, read-only), and Delivery prices its own grid with the
 pure functions in `@baseline/domain`.
 
+- Option A, ask People for the answer. Delivery sends "how much does 88 hours of Okafor in March cost?"
+  and People replies "€7,880".
+- Option B, ask People for the ingredients. Delivery asks "what are Okafor's rates and dates?" and
+  People replies "€80 from January 2025, €95 from 12 March 2026". Delivery then does the maths itself.
+
 I chose option B, here is why:
 
 Four reasons:
 
 1. **Delivery has to work on its own.** With Option A, Delivery alone cannot show a single cost because nobody is there to answer. With
-     Option B, Delivery just needs a copy of the rates, which it can load from a sample file when running
-     alone.
+   Option B, Delivery just needs a copy of the rates, which it can load from a sample file when running
+   alone.
 2. **The maths calculation belongs to Delivery.** Splitting a month at 12 March into 8 days at the old rate and 14 days
-     at the new rate depends on how Delivery spreads hours across working days. If People did the
-     calculation, People would have to understand Delivery's rules about months and working days.
+   at the new rate depends on how Delivery spreads hours across working days. If People did the
+   calculation, People would have to understand Delivery's rules about months and working days.
 3. **Failure isolation.** If People crashes, Delivery keeps working. With Option B, Delivery still shows hours and
-     person-months, and just puts "rates unavailable" in the cost column. With Option A, every cost cell
-     would break the moment People went down.
+   person-months, and just puts "rates unavailable" in the cost column. With Option A, every cost cell
+   would break the moment People went down.
 4. **A small, stable contract.** Option B only needs People to hand over a list of rate records
-     and say "tell me when they change". That is a tiny agreement that rarely needs to change. Option A
-     would be a bigger
+   and say "tell me when they change". That is a tiny agreement that rarely needs to change. Option A
+   would be a bigger
 
 The trade-off: the rule "which rate applies on which day" lives in a shared library rather
 than exclusively inside People. The library is pure, versioned, has no state and no React,
 and People uses the same functions for its own rate preview, so there is one implementation
 rather than two
-
 
 ## Tests
 
