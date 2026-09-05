@@ -16,10 +16,6 @@ export interface PeopleApi {
   subscribe(listener: (snapshot: PeopleSnapshot) => void): () => void; // can be called after every change in People. Returns a function that unsubscribes
 }
 
-export interface MountContext {
-  readonly people?: PeopleApi;
-}
-
 // Every remote exposes `./mount` with this shape. The host renders the
 // remote into `container` and receives a function that tears it down
 export type MountFn = (container: HTMLElement, context?: MountContext) => () => void;
@@ -37,11 +33,6 @@ export interface AllocationsSnapshot {
 export interface AllocationsApi {
   snapshot(): AllocationsSnapshot;
   subscribe(listener: (snapshot: AllocationsSnapshot) => void): () => void;
-}
-
-export interface MountContext {
-  readonly people?: PeopleApi;
-  readonly allocations?: AllocationsApi;
 }
 
 /** The module People exposes at `./api`. */

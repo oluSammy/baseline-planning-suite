@@ -1,7 +1,5 @@
 import type { Project, ProjectId } from "@baseline/domain";
-import type { PeopleSnapshot } from "@baseline/contracts";
-import type { Employee, EmployeeId, RateRecord, RateRecordId } from "@baseline/domain";
-import { createEntityAdapter, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 
 export const projectsAdapter = createEntityAdapter<Project, ProjectId>({
   selectId: (project) => project.id,
@@ -13,33 +11,4 @@ export const projectsSlice = createSlice({
   reducers: {},
 });
 
-export const employeesAdapter = createEntityAdapter<Employee, EmployeeId>({
-  selectId: (employee) => employee.id,
-  sortComparer: (a, b) => a.name.localeCompare(b.name),
-});
-
-export const rateRecordsAdapter = createEntityAdapter<RateRecord, RateRecordId>({
-  selectId: (record) => record.id,
-});
-
-// Delivery's read-only copy of what People publishes. Not created
-// persisted: it is refilled from the PeopleApi on every mount.
-// also replaced on every change published through the subscription
-export const peopleSlice = createSlice({
-  name: "people",
-  initialState: {
-    available: false,
-    employees: employeesAdapter.getInitialState(),
-    rateRecords: rateRecordsAdapter.getInitialState(),
-  },
-  reducers: {
-    peopleSnapshotReceived(state, action: PayloadAction<PeopleSnapshot>) {
-      state.available = true;
-      employeesAdapter.setAll(state.employees, action.payload.employees);
-      rateRecordsAdapter.setAll(state.rateRecords, action.payload.rateRecords);
-    },
-  },
-});
-
-export const { peopleSnapshotReceived } = peopleSlice.actions;
 export const projectsReducer = projectsSlice.reducer;
