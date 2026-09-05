@@ -20,27 +20,27 @@ export function Register({ onSelect }: RegisterProps) {
   const capacityAvailable = useAppSelector(selectCapacityAvailable);
 
   return (
-    <section aria-labelledby="register-heading">
-      <h2 id="register-heading">Employees</h2>
-      <label>
-        Search
+    <section aria-label="Employees">
+      <div className="people-search-row">
         <input
           type="search"
+          className="field"
+          aria-label="Search by name or role"
+          placeholder="Search by name or role"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Name or role"
         />
-      </label>
-      <p>
-        {employees.length} of {total}
-      </p>
-      <table>
+        <span className="people-count num">
+          {employees.length} of {total}
+        </span>
+      </div>
+      <table className="people-table">
         <thead>
           <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Role</th>
-            <th scope="col">Hours / week</th>
-            <th scope="col">Capacity</th>
+            <th scope="col" className="eyebrow">Name</th>
+            <th scope="col" className="eyebrow">Role</th>
+            <th scope="col" className="eyebrow">Hours / week</th>
+            <th scope="col" className="eyebrow">Capacity</th>
           </tr>
         </thead>
         <tbody>
@@ -49,18 +49,20 @@ export function Register({ onSelect }: RegisterProps) {
             return (
               <tr key={employee.id}>
                 <td>
-                  <button type="button" onClick={() => onSelect(employee.id)}>
+                  <button type="button" className="link-button" onClick={() => onSelect(employee.id)}>
                     {employee.name}
                   </button>
                 </td>
                 <td>{employee.role}</td>
-                <td>{employee.weeklyHours}</td>
+                <td className="num">{employee.weeklyHours}</td>
                 <td>
-                  {!capacityAvailable
-                    ? "unknown"
-                    : (months?.length ?? 0) > 0
-                      ? `Over in ${months?.length} month${months?.length === 1 ? "" : "s"}`
-                      : ""}
+                  {!capacityAvailable ? (
+                    <span className="people-capacity">unknown</span>
+                  ) : (months?.length ?? 0) > 0 ? (
+                    <span className="people-capacity people-capacity--over">
+                      Over in {months.length} month{months.length === 1 ? "" : "s"}
+                    </span>
+                  ) : null}
                 </td>
               </tr>
             );

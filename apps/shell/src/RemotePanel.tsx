@@ -53,13 +53,13 @@ export function RemotePanel({ name, context }: RemotePanelProps) {
 
   return (
     <section aria-label={`${name} remote`}>
-      {status.kind === "loading" && <p>Loading {name}…</p>}
+      {status.kind === "loading" && <p className="shell-panel-loading">Loading {name}…</p>}
       {status.kind === "failed" && (
-        <div role="alert">
+        <div className="shell-panel-failed" role="alert">
           <h2>{name} is unavailable</h2>
           <p>The remote could not be loaded. The rest of Baseline keeps working.</p>
           <pre>{status.message}</pre>
-          <button type="button" onClick={() => setAttempt((n) => n + 1)}>
+          <button type="button" className="btn-primary" onClick={() => setAttempt((n) => n + 1)}>
             Retry
           </button>
         </div>

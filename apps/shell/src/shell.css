@@ -1,0 +1,120 @@
+.shell-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  height: 52px;
+  padding: 0 var(--s-6);
+  background: var(--n-0);
+  border-bottom: 1px solid var(--n-200);
+}
+
+.shell-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shell-brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  background: var(--brand-500);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 26px;
+  text-align: center;
+}
+
+.shell-brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.shell-nav {
+  display: flex;
+  gap: var(--s-1);
+}
+
+.shell-nav a {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--n-600);
+  text-decoration: none;
+}
+
+.shell-nav a:hover {
+  background: var(--n-100);
+  color: var(--n-700);
+}
+
+.shell-nav a[aria-current="page"] {
+  background: var(--brand-50);
+  color: var(--brand-600);
+}
+
+.shell-spacer {
+  flex: 1;
+}
+
+.shell-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.shell-controls label {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 12px;
+  color: var(--n-500);
+}
+
+.shell-controls .field {
+  max-width: 190px;
+}
+
+/* Panel states */
+
+.shell-panel-loading {
+  padding: 48px var(--s-7);
+  font-size: 13px;
+  color: var(--n-500);
+}
+
+.shell-panel-failed {
+  padding: 48px var(--s-7);
+  max-width: 640px;
+}
+
+.shell-panel-failed h2 {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+  margin-bottom: var(--s-2);
+}
+
+.shell-panel-failed p {
+  font-size: 13px;
+  color: var(--n-600);
+  margin-bottom: var(--s-4);
+}
+
+.shell-panel-failed pre {
+  margin: 0 0 var(--s-4);
+  padding: 12px 14px;
+  background: var(--n-100);
+  border: 1px solid var(--n-200);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--n-600);
+  white-space: pre-wrap;
+}

@@ -16,16 +16,21 @@ export function App() {
   );
 
   return (
-    <main className="baseline">
-      <header>
+    <main className={`baseline people-page${selectedId === null ? "" : " people-page--narrow"}`}>
+      <header className="people-title-row">
         <h1>People</h1>
-        <button type="button" onClick={() => dispatch(resetToSeed())}>
+        <span className="people-signed">
+          {activeName === null ? "Nobody signed in" : `Signed in as ${activeName}`}
+        </span>
+        <div className="people-spacer" />
+        <button type="button" className="people-reset" onClick={() => dispatch(resetToSeed())}>
           Reset to seed
         </button>
-        <p>{activeName === null ? "Nobody signed in" : `Signed in as ${activeName}`}</p>
       </header>
       {!capacityAvailable && (
-        <p role="status">Staffing data unavailable. Capacity will show as unknown.</p>
+        <p role="status" className="notice-info people-status">
+          Staffing data unavailable. Capacity will show as unknown.
+        </p>
       )}
       {selectedId === null ? (
         <Register onSelect={setSelectedId} />

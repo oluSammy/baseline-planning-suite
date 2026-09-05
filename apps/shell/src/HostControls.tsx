@@ -21,10 +21,11 @@ export function HostControls({ peopleApi }: HostControlsProps) {
   }, [peopleApi]);
 
   return (
-    <div role="group" aria-label="Display settings">
+    <div className="shell-controls" role="group" aria-label="Display settings">
       <label>
         Currency
         <select
+          className="field"
           value={currency.code}
           onChange={(event) => {
             const next = CURRENCIES.find((c) => c.code === event.target.value);

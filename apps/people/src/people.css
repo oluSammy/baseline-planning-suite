@@ -1,0 +1,251 @@
+/* People remote. Every class is prefixed people- so nothing can collide with the shell or Delivery. */
+
+.people-page {
+  padding: 22px var(--s-7);
+  max-width: 980px;
+}
+
+.people-page--narrow {
+  max-width: 820px;
+}
+
+.people-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: var(--s-1);
+}
+
+.people-title-row h1 {
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 700;
+}
+
+.people-signed {
+  font-size: 12px;
+  color: var(--n-500);
+}
+
+.people-spacer {
+  flex: 1;
+}
+
+.people-reset {
+  height: 24px;
+  padding: 0 var(--s-2);
+  border: none;
+  background: none;
+  font-size: 11.5px;
+  color: var(--n-500);
+  text-decoration: underline;
+}
+
+.people-status {
+  margin: var(--s-2) 0;
+}
+
+/* Register */
+
+.people-search-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 10px 0;
+}
+
+.people-search-row .field {
+  height: 30px;
+  width: 280px;
+}
+
+.people-count {
+  font-size: 12px;
+  color: var(--n-500);
+}
+
+.people-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--n-0);
+  border: 1px solid var(--n-200);
+  border-radius: var(--r-sm);
+}
+
+.people-table th {
+  padding: 6px var(--s-3);
+  text-align: left;
+  background: var(--n-50);
+  border-bottom: 1px solid var(--n-200);
+}
+
+.people-table td {
+  height: 30px;
+  padding: 0 var(--s-3);
+  border-bottom: 1px solid var(--n-100);
+  color: var(--n-600);
+}
+
+.people-table tr:last-child td {
+  border-bottom: none;
+}
+
+.people-table .num,
+.people-table th.num {
+  text-align: right;
+}
+
+.people-table .link-button {
+  font-size: 13px;
+}
+
+.people-capacity {
+  font-size: 12.5px;
+  color: var(--n-400);
+}
+
+.people-capacity--over {
+  font-weight: 600;
+  color: var(--over);
+}
+
+/* Employee detail */
+
+.people-back {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-size: 12.5px;
+}
+
+.people-detail-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  margin-bottom: 14px;
+}
+
+.people-detail-head h2 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+}
+
+.people-detail-meta {
+  font-size: 13px;
+  color: var(--n-500);
+}
+
+.people-card + .people-card {
+  margin-top: var(--s-4);
+}
+
+.people-card .eyebrow {
+  margin-bottom: var(--s-2);
+}
+
+.people-card p {
+  font-size: 13px;
+  color: var(--n-600);
+}
+
+.people-over-line {
+  padding: 2px 0;
+  font-size: 13px;
+  color: var(--over);
+}
+
+.people-rates {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.people-rates th {
+  padding: 4px var(--s-2);
+  text-align: left;
+  border-bottom: 1px solid var(--n-200);
+}
+
+.people-rates td {
+  height: 30px;
+  padding: 0 var(--s-2);
+  border-bottom: 1px solid var(--n-100);
+}
+
+.people-rates .num,
+.people-rates th.num {
+  text-align: right;
+}
+
+.people-rates .people-muted {
+  color: var(--n-500);
+}
+
+.people-rates .people-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.people-rates .people-actions button {
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.people-rates .people-actions .people-remove {
+  color: var(--n-500);
+}
+
+.people-edit-cell {
+  padding: 6px var(--s-2) !important;
+  height: auto !important;
+}
+
+/* Rate form, used inline for corrections and below the table for additions */
+
+.people-form {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.people-form .field {
+  height: 26px;
+}
+
+.people-form .people-form-date {
+  width: 130px;
+}
+
+.people-form .people-form-cost {
+  width: 100px;
+  text-align: right;
+}
+
+.people-form-hint {
+  font-size: 12px;
+  color: var(--n-500);
+}
+
+.people-form-error {
+  margin-top: 5px;
+}
+
+.people-add {
+  margin-top: 14px;
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--n-100);
+}
+
+.people-add h3 {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--n-600);
+}
+
+.people-form {
+  flex-wrap: wrap;
+}
+
+.people-form-error {
+  flex-basis: 100%;
+}

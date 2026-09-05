@@ -1,3 +1,5 @@
+import "./shell.css";
+
 import type { MountContext, PeopleApi, RemoteName } from "@baseline/contracts";
 import { useEffect, useState } from "react";
 import { RemotePanel } from "./RemotePanel";
@@ -39,9 +41,14 @@ export function App({ contexts, peopleApi }: AppProps) {
 
   return (
     <div className="baseline">
-      <header>
-        <h1>Baseline</h1>
-        <nav aria-label="Primary">
+      <header className="shell-header">
+        <div className="shell-brand">
+          <span className="shell-brand-mark" aria-hidden="true">
+            B
+          </span>
+          <h1 className="shell-brand-name">Baseline</h1>
+        </div>
+        <nav className="shell-nav" aria-label="Primary">
           {ROUTES.map((route) => (
             <a
               key={route.path}
@@ -56,6 +63,7 @@ export function App({ contexts, peopleApi }: AppProps) {
             </a>
           ))}
         </nav>
+        <div className="shell-spacer" />
         <HostControls peopleApi={peopleApi} />
       </header>
       <RemotePanel name={active} context={contexts[active]} />

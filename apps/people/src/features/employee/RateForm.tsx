@@ -47,34 +47,40 @@ export function RateForm({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Valid from
-        <input
-          type="date"
-          value={validFrom}
-          onChange={(e) => setValidFrom(e.target.value)}
-          required
-        />
-      </label>
-      <label>
-        € / hour
-        <input
-          type="number"
-          min="0.01"
-          step="0.01"
-          value={cost}
-          onChange={(e) => setCost(e.target.value)}
-          required
-        />
-      </label>
-      <button type="submit">{submitLabel}</button>
+    <form className="people-form" onSubmit={handleSubmit}>
+      Valid from
+      <input
+        className="field people-form-date"
+        type="date"
+        aria-label="Valid from"
+        value={validFrom}
+        onChange={(e) => setValidFrom(e.target.value)}
+        required
+      />
+      <input
+        className="field people-form-cost num"
+        type="number"
+        aria-label="Euros per hour"
+        min="0.01"
+        step="0.01"
+        value={cost}
+        onChange={(e) => setCost(e.target.value)}
+        required
+      />
+      <span className="people-form-hint">€ per hour</span>
+      <button type="submit" className="btn-primary">
+        {submitLabel}
+      </button>
       {onCancel && (
-        <button type="button" onClick={onCancel}>
+        <button type="button" className="btn-secondary" onClick={onCancel}>
           Cancel
         </button>
       )}
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p role="alert" className="error-line people-form-error">
+          {error}
+        </p>
+      )}
     </form>
   );
 }
