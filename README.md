@@ -39,7 +39,7 @@ so `localhost:8080` and `localhost:8081` keep separate data.
 The shell must stay alive and say so in place of the panel. Three ways to prove it:
 
 1. **A query parameter.** Open [http://localhost:8080/delivery?break=people](http://localhost:8080/delivery?break=people) (or
-   `?break=delivery`). The panel shows "Delivery is unavailable" with the error. the header, the other
+   `?break=delivery`). The panel shows "Delivery in degraded mode" with the error. the header, the other
    app, and your data are untouched.
 2. **A real outage.** `docker compose stop people`, then reload [http://localhost:8080/people](http://localhost:8080/people).
    Same panel. Switch to Delivery: it loads, the title row shows "People register unavailable",
@@ -82,7 +82,7 @@ Boundaries are enforced by tooling, ESLint forbids any app importing another
 app, and forbids React, Redux, or app code inside `domain` and `contracts`. The domain package
 cannot reference `window`, because its TypeScript config has no DOM library.
 
-## Who computes cost: Delivery, from People's rate records
+### Who computes cost: Delivery, from People's rate records
 
 Delivery needs to show what a month of someone's work costs. To do that it needs two things: how many
 hours the person works that month, which Delivery knows, and what that person costs per hour, which
@@ -117,8 +117,34 @@ Four reasons:
 
 The trade-off: the rule "which rate applies on which day" lives in a shared library rather
 than exclusively inside People. The library is pure, versioned, has no state and no React,
-and People uses the same functions for its own rate preview, so there is one implementation
-rather than two
+and People uses the same functions for its own rate preview, so there is one implementation rather than two
+
+### State: Redux Toolkit, one store per app, published contracts only
+
+Each app has its own Redux store. Nothing shares a store. What an app needs from another
+arrives through the contract objects the shell injects at mount time, and is kept as a
+read-only copy in a slice that is never persisted.
+
+### Transport: federated `./api` modules composed by the shell
+
+Each remote exposes two federated modules, `./mount` for its UI and `./api` for its contract.
+The shell loads both APIs and passes People's to Delivery and Delivery's to People. Neither
+remote knows the other's URL, module name, or store. Change propagation is a subscribe callback
+backed by the Redux store, so a rate edited in People re-prices any open Delivery cost view
+synchronously, and an allocation edited in Delivery updates People's capacity column. The two
+subscriptions cannot loop because each publisher compares references and only fires when its
+own data changed.
+
+### Persistence: localStorage, namespaced per owner, versioned
+
+`baseline.people.v1`, `baseline.delivery.v1`, `baseline.shell.v1`. Each store writes through
+after every action and loads on start, falling back to the seed. Storage sits behind a
+three-method adapter so a backend or IndexedDB is a one-file change per app.
+
+### Bundler: webpack 5 with Module Federation 2.0
+
+The `@module-federation/enhanced` plugin adds the
+runtime API used for registering remotes from the fetched config.
 
 ## Tests
 
