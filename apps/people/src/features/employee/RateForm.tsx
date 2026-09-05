@@ -48,7 +48,6 @@ export function RateForm({
 
   return (
     <form className="people-form" onSubmit={handleSubmit}>
-      Valid from
       <input
         className="field people-form-date"
         type="date"

@@ -146,28 +146,13 @@ export function EmployeeDetail({ employeeId, onClose }: EmployeeDetailProps) {
         )}
 
         <div className="people-add">
-          <h3>Add rate</h3>
+          <h3>Add rate (in euros)</h3>
           <RateForm
             employeeRecords={records}
             excludeId={null}
-            submitLabel="Add rate (in euros)"
+            submitLabel="Add"
             onSubmit={(value) => dispatch(rateAdded({ employeeId, ...value }))}
           />
-
-          <h3>Capacity</h3>
-          {!capacityAvailable ? (
-            <p role="status">Staffing data unavailable, so capacity cannot be shown.</p>
-          ) : months.length === 0 ? (
-            <p>Within capacity in every month.</p>
-          ) : (
-            <ul>
-              {months.map(({ month, total }) => (
-                <li key={month}>
-                  {month}: {total.toFixed(2)} person-months across all projects
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
       </section>
     </section>
