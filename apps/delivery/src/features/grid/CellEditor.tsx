@@ -11,6 +11,7 @@ export function CellEditor({ initial, onCommit, onCancel }: CellEditorProps) {
   const [text, setText] = useState(initial);
   return (
     <input
+      className="delivery-cell-input num"
       autoFocus
       inputMode="decimal"
       aria-label="Cell value"

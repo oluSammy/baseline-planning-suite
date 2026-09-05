@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import {
   capacityKey,
   personMonths,
@@ -27,9 +27,10 @@ import {
   selectUnpricedCellKeys,
   type CellRef,
 } from "../../store/selectors";
-import { CellInspector } from "./CellInspector";
 import { allocationSet } from "../../store/allocationsSlice";
 import { CellEditor } from "./CellEditor";
+import { CellInspector } from "./CellInspector";
+
 interface StaffingGridProps {
   readonly projectId: ProjectId;
 }
@@ -55,6 +56,11 @@ const MONTH_NAMES = [
   "Nov",
   "Dec",
 ];
+
+/** Column widths from the design: label, one per month, total. */
+const LABEL_COLUMN_WIDTH = 304;
+const MONTH_COLUMN_WIDTH = 67;
+const TOTAL_COLUMN_WIDTH = 80;
 
 // `2026-04` - `Apr 26`
 function formatMonth(month: Month): string {
@@ -120,124 +126,166 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
   };
 
   return (
-    <section aria-labelledby="grid-heading">
-      <h2 id="grid-heading">Staffing</h2>
-      <fieldset>
-        <legend>Unit</legend>
-        {(Object.keys(UNIT_LABELS) as DisplayUnit[]).map((option) => (
-          <label key={option}>
-            <input
-              type="radio"
-              name="unit"
-              value={option}
-              checked={unit === option}
-              disabled={(option === "hours" || option === "cost") && !peopleAvailable}
-              onChange={() => setUnit(option)}
-            />
-            {option === "cost" ? currency.code : UNIT_LABELS[option]}
-          </label>
-        ))}
-      </fieldset>
-      {error && <p role="alert">{error}</p>}
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Work package / person</th>
-            {months.map((m) => (
-              <th key={m} scope="col">
-                {formatMonth(m)}
-              </th>
-            ))}
-            <th scope="col">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.kind === "item" ? row.item.id : `${row.item.id}:${row.employeeId}`}>
-              <th scope="row" style={{ paddingLeft: `${row.depth - 1}rem` }}>
-                {row.kind === "item" ? (
-                  <>
-                    {row.item.name} <small>DERIVED</small>
-                  </>
-                ) : (
-                  row.label
-                )}
-                {row.kind === "item" && row.isLeaf && (
-                  <select
-                    aria-label={`Assign a person to ${row.item.name}`}
-                    value=""
-                    onChange={(event) => {
-                      if (event.target.value) assign(row.item.id, event.target.value as EmployeeId);
-                    }}
-                  >
-                    <option value="">Assign person…</option>
-                    {employees
-                      .filter(
-                        (e) =>
-                          !rows.some(
-                            (r) =>
-                              r.kind === "person" &&
-                              r.item.id === row.item.id &&
-                              r.employeeId === e.id,
-                          ),
-                      )
-                      .map((e) => (
-                        <option key={e.id} value={e.id}>
-                          {e.name}
-                        </option>
-                      ))}
-                  </select>
-                )}
-              </th>
-              {months.map((m) => {
-                const value = row.cells[m] === undefined ? "" : row.cells[m].toFixed(dp);
-                const isUnpriced = row.kind === "person" && unpriced.has(`${row.employeeId}|${m}`);
-                const isSelected =
-                  row.kind === "person" &&
-                  selected?.itemId === row.item.id &&
-                  selected.employeeId === row.employeeId &&
-                  selected.month === m;
+    <section className="card delivery-grid" aria-labelledby="grid-heading">
+      <div className="delivery-grid-head">
+        <h2 id="grid-heading" className="eyebrow">
+          Staffing
+        </h2>
+        <span className="delivery-spacer" />
+        <span className="delivery-unit-label">Unit</span>
+        <fieldset className="delivery-unit">
+          <legend>Unit</legend>
+          {(Object.keys(UNIT_LABELS) as DisplayUnit[]).map((option) => {
+            const disabled = (option === "hours" || option === "cost") && !peopleAvailable;
+            return (
+              <label
+                key={option}
+                title={disabled ? "Unavailable while the People register is down" : undefined}
+              >
+                <input
+                  type="radio"
+                  name="unit"
+                  value={option}
+                  checked={unit === option}
+                  disabled={disabled}
+                  onChange={() => setUnit(option)}
+                />
+                {option === "cost" ? currency.code : UNIT_LABELS[option]}
+              </label>
+            );
+          })}
+        </fieldset>
+      </div>
 
-                return (
-                  <td key={m} aria-selected={isSelected || undefined}>
-                    {row.kind === "person" ? (
-                      isSelected ? (
-                        <CellEditor
-                          key={`${row.employeeId}|${m}`}
-                          initial={value}
-                          onCommit={(text) => commit(row, m, text)}
-                          onCancel={() => setSelected(null)}
-                        />
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSelected({
-                              itemId: row.item.id,
-                              employeeId: row.employeeId,
-                              month: m,
-                            })
-                          }
-                        >
-                          {value || "–"}
-                        </button>
-                      )
-                    ) : (
-                      value
-                    )}
-                    {isUnpriced && (
-                      <abbr title="Some working days have no rate and are priced at zero">*</abbr>
-                    )}
-                    {row.kind === "person" &&
-                      capacityMarker(row.employeeId, m, over, itemLabels, people)}
-                  </td>
-                );
-              })}
-              <td>{row.total.toFixed(dp)}</td>
+      {error && (
+        <p role="alert" className="error-line delivery-grid-error">
+          {error}
+        </p>
+      )}
+
+      <div className="delivery-grid-scroll">
+        <table className="delivery-grid-table">
+          <colgroup>
+            <col style={{ width: LABEL_COLUMN_WIDTH }} />
+            {months.map((m) => (
+              <col key={m} style={{ width: MONTH_COLUMN_WIDTH }} />
+            ))}
+            <col style={{ width: TOTAL_COLUMN_WIDTH }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Work package / person</th>
+              {months.map((m) => (
+                <th key={m} scope="col" className="num">
+                  {formatMonth(m)}
+                </th>
+              ))}
+              <th scope="col">Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr
+                key={row.kind === "item" ? row.item.id : `${row.item.id}:${row.employeeId}`}
+                className={`delivery-row delivery-row--${row.kind === "item" ? "derived" : "person"}`}
+                style={{ "--depth": row.depth } as CSSProperties}
+              >
+                <th scope="row" className="delivery-label">
+                  <span className="delivery-label-name">
+                    {row.kind === "item" ? row.item.name : row.label}
+                  </span>
+                  {row.kind === "item" && <span className="delivery-derived-chip">DERIVED</span>}
+                  <span className="delivery-spacer" />
+                  {row.kind === "item" && row.isLeaf && (
+                    <select
+                      className="delivery-assign"
+                      aria-label={`Assign a person to ${row.item.name}`}
+                      value=""
+                      onChange={(event) => {
+                        if (event.target.value)
+                          assign(row.item.id, event.target.value as EmployeeId);
+                      }}
+                    >
+                      <option value="">Assign person…</option>
+                      {employees
+                        .filter(
+                          (e) =>
+                            !rows.some(
+                              (r) =>
+                                r.kind === "person" &&
+                                r.item.id === row.item.id &&
+                                r.employeeId === e.id,
+                            ),
+                        )
+                        .map((e) => (
+                          <option key={e.id} value={e.id}>
+                            {e.name}
+                          </option>
+                        ))}
+                    </select>
+                  )}
+                </th>
+                {months.map((m) => {
+                  const value = row.cells[m] === undefined ? "" : row.cells[m].toFixed(dp);
+                  const isUnpriced =
+                    row.kind === "person" && unpriced.has(`${row.employeeId}|${m}`);
+                  const isSelected =
+                    row.kind === "person" &&
+                    selected?.itemId === row.item.id &&
+                    selected.employeeId === row.employeeId &&
+                    selected.month === m;
+
+                  return (
+                    <td
+                      key={m}
+                      className="delivery-cell num"
+                      aria-selected={isSelected || undefined}
+                    >
+                      {row.kind === "person" ? (
+                        isSelected ? (
+                          <CellEditor
+                            key={`${row.employeeId}|${m}`}
+                            initial={value}
+                            onCommit={(text) => commit(row, m, text)}
+                            onCancel={() => setSelected(null)}
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            className="delivery-cell-button"
+                            onClick={() =>
+                              setSelected({
+                                itemId: row.item.id,
+                                employeeId: row.employeeId,
+                                month: m,
+                              })
+                            }
+                          >
+                            {value || "–"}
+                            {isUnpriced && (
+                              <abbr
+                                className="delivery-marker delivery-marker--unpriced"
+                                title="Some working days have no rate and are priced at zero"
+                              >
+                                *
+                              </abbr>
+                            )}
+                            {capacityMarker(row.employeeId, m, over, itemLabels, people)}
+                          </button>
+                        )
+                      ) : (
+                        value
+                      )}
+                    </td>
+                  );
+                })}
+                <td className="delivery-cell delivery-total num">{row.total.toFixed(dp)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       {selected && (
         <CellInspector
           cell={selected}
@@ -267,6 +315,7 @@ const capacityMarker = (
 
   return (
     <abbr
+      className="delivery-marker delivery-marker--over"
       title={`Over capacity: ${flag.total.toFixed(2)} person-months across all projects. Caused by ${cause}${suffix}.`}
     >
       †

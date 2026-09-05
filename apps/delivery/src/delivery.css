@@ -201,3 +201,327 @@
   font-weight: 700;
   color: var(--warning-ink);
 }
+
+/* Staffing grid */
+
+.delivery-grid {
+  padding: 12px 14px;
+}
+
+.delivery-grid-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.delivery-grid-head .delivery-spacer {
+  flex: 1;
+}
+
+.delivery-unit-label {
+  font-size: 11.5px;
+  color: var(--n-500);
+}
+
+/* Segmented control over real radio inputs. The input is visually hidden; the label is the button. */
+
+.delivery-unit {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--n-300);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.delivery-unit legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.delivery-unit label {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 var(--s-3);
+  border-left: 1px solid var(--n-200);
+  background: var(--n-0);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-600);
+  cursor: pointer;
+}
+
+.delivery-unit label:first-of-type {
+  border-left: none;
+}
+
+.delivery-unit input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.delivery-unit label:has(input:checked) {
+  background: var(--brand-500);
+  color: #fff;
+}
+
+.delivery-unit label:has(input:disabled) {
+  color: var(--n-400);
+  cursor: default;
+}
+
+.delivery-unit label:has(input:focus-visible) {
+  box-shadow: var(--shadow-focus);
+}
+
+.delivery-grid-error {
+  margin-bottom: var(--s-2);
+}
+
+.delivery-grid-scroll {
+  overflow-x: auto;
+}
+
+.delivery-grid-table {
+  min-width: 1188px;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.delivery-grid-table thead th {
+  padding: 5px 6px;
+  background: var(--n-50);
+  border-bottom: 1px solid var(--n-200);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--n-500);
+}
+
+.delivery-grid-table thead th:first-child {
+  text-align: left;
+  padding-left: var(--s-2);
+  letter-spacing: 0.06em;
+}
+
+.delivery-row {
+  height: 28px;
+  border-bottom: 1px solid var(--n-100);
+}
+
+.delivery-row--derived {
+  background: var(--n-50);
+}
+
+.delivery-row--person {
+  background: var(--n-0);
+}
+
+/* Row header. --depth is set inline per row; derived rows indent one step less than their people. */
+
+.delivery-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 var(--s-2);
+  padding-left: calc(var(--s-2) + (var(--depth, 1) - 1) * 16px);
+  font-weight: 400;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.delivery-row--derived .delivery-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--n-600);
+}
+
+.delivery-row--person .delivery-label {
+  font-size: 12.5px;
+  color: var(--n-700);
+}
+
+.delivery-label-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.delivery-label .delivery-spacer {
+  flex: 1;
+}
+
+.delivery-derived-chip {
+  flex: none;
+  padding: 0 4px;
+  border: 1px solid var(--n-200);
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 14px;
+  color: var(--n-400);
+}
+
+.delivery-assign {
+  flex: none;
+  height: 20px;
+  max-width: 110px;
+  padding: 0 var(--s-1);
+  border: 1px solid var(--n-200);
+  border-radius: var(--r-xs);
+  background: var(--n-0);
+  font-size: 10.5px;
+  color: var(--n-500);
+}
+
+/* Cells */
+
+.delivery-cell {
+  height: 28px;
+  padding: 0 6px;
+  border-left: 1px solid var(--n-100);
+  text-align: right;
+  font-size: 12.5px;
+  color: var(--n-700);
+  white-space: nowrap;
+}
+
+.delivery-row--derived .delivery-cell {
+  font-weight: 600;
+  color: var(--n-600);
+}
+
+.delivery-total {
+  font-weight: 700;
+}
+
+.delivery-row--person .delivery-total {
+  font-weight: 400;
+}
+
+.delivery-cell[aria-selected="true"] {
+  background: var(--brand-50);
+  box-shadow: inset 0 0 0 2px var(--brand-500);
+}
+
+.delivery-cell-button {
+  width: 100%;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+.delivery-cell-button:hover {
+  background: var(--n-50);
+}
+
+.delivery-cell-input {
+  width: 100%;
+  height: 22px;
+  padding: 0 4px;
+  border: 1px solid var(--brand-500);
+  border-radius: 3px;
+  background: var(--n-0);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.delivery-cell-input:focus-visible {
+  box-shadow: none;
+  border-radius: 3px;
+}
+
+.delivery-marker {
+  margin-left: 2px;
+  font-weight: 700;
+}
+
+.delivery-marker--over {
+  color: var(--over);
+}
+
+.delivery-marker--unpriced {
+  color: var(--info);
+}
+
+/* Cell inspector */
+
+.delivery-inspector {
+  margin-top: 14px;
+  max-width: 920px;
+  padding: 12px 16px;
+}
+
+.delivery-inspector-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--s-2);
+}
+
+.delivery-inspector-head h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--n-700);
+}
+
+.delivery-inspector-head .delivery-spacer {
+  flex: 1;
+}
+
+.delivery-inspector-close {
+  padding: 2px 6px;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-500);
+}
+
+.delivery-inspector-close:hover {
+  color: var(--n-700);
+}
+
+.delivery-inspector-list {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  row-gap: 3px;
+  column-gap: var(--s-4);
+}
+
+.delivery-inspector-list dt {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--n-500);
+}
+
+.delivery-inspector-list dd {
+  font-size: 12.5px;
+  color: var(--n-700);
+}
+
+.delivery-tone-info {
+  color: var(--info-ink);
+}
+
+.delivery-tone-over {
+  font-weight: 600;
+  color: var(--over);
+}
