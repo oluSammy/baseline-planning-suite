@@ -68,6 +68,9 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
   const peopleAvailable = useAppSelector(selectPeopleAvailable);
   const over = useAppSelector(selectOverCapacity);
   const itemLabels = useAppSelector(selectItemLabels);
+  const [pending, setPending] = useState<ReadonlyMap<BreakdownItemId, readonly EmployeeId[]>>(
+    new Map(),
+  );
   const rows = useAppSelector((state) =>
     selectDisplayGridForProject(state, projectId, pending, unit),
   );
@@ -76,9 +79,6 @@ export function StaffingGrid({ projectId }: StaffingGridProps) {
   const activeUser = useAppSelector(selectActiveUser);
   const dp = UNIT_DECIMALS[unit];
 
-  const [pending, setPending] = useState<ReadonlyMap<BreakdownItemId, readonly EmployeeId[]>>(
-    new Map(),
-  );
   const employees = useAppSelector(selectAllEmployees);
 
   const assign = (itemId: BreakdownItemId, employeeId: EmployeeId) => {

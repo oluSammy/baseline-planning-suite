@@ -67,12 +67,7 @@ function TreeItem({ node, projectId }: { readonly node: TreeNode; readonly proje
           initial={node.item.name}
           submitLabel="Save"
           onSubmit={(name) => {
-            dispatch(itemAdded({ projectId, parentId: node.item.id, name }));
-            if (allocationsHere > 0) {
-              setNotice(
-                `${allocationsHere} allocation${allocationsHere === 1 ? "" : "s"} moved from ${node.item.name} to ${name}.`,
-              );
-            }
+            dispatch(itemRenamed({ id: node.item.id, name }));
             setMode("view");
           }}
           onCancel={() => setMode("view")}
@@ -147,7 +142,12 @@ function TreeItem({ node, projectId }: { readonly node: TreeNode; readonly proje
           initial=""
           submitLabel="Add"
           onSubmit={(name) => {
-            dispatch(itemRenamed({ id: node.item.id, name }));
+            dispatch(itemAdded({ projectId, parentId: node.item.id, name }));
+            if (allocationsHere > 0) {
+              setNotice(
+                `${allocationsHere} allocation${allocationsHere === 1 ? "" : "s"} moved from ${node.item.name} to ${name}.`,
+              );
+            }
             setMode("view");
           }}
           onCancel={() => setMode("view")}

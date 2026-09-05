@@ -124,6 +124,9 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
           </dd>
 
           <dt>Implied blended rate</dt>
+          <dd>
+            {pricing.blendedRate === null ? "n/a" : `${euro(roundTo(pricing.blendedRate, 4), 4)}/h`}
+          </dd>
           {currency.code !== "EUR" && (
             <>
               <dt>Cost in {currency.code}</dt>
@@ -132,9 +135,6 @@ export function CellInspector({ cell, itemName, onClose }: CellInspectorProps) {
               </dd>
             </>
           )}
-          <dd>
-            {pricing.blendedRate === null ? "n/a" : `${euro(roundTo(pricing.blendedRate, 4), 4)}/h`}
-          </dd>
         </dl>
       )}
     </aside>
