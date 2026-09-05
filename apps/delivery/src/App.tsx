@@ -3,8 +3,8 @@ import type { ProjectId } from "@baseline/domain";
 import { useState } from "react";
 import { BreakdownTree } from "./features/breakdown/BreakdownTree";
 import { ProjectSwitcher } from "./features/projects/ProjectSwitcher";
-import { resetToSeed } from "./store";
-import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { ResetToSeed } from "./ResetToSeed";
+import { useAppSelector } from "./store/hooks";
 import {
   selectActiveUser,
   selectAllEmployees,
@@ -15,7 +15,6 @@ import {
 import { StaffingGrid } from "./features/grid/StaffingGrid";
 
 export function App() {
-  const dispatch = useAppDispatch();
   const projects = useAppSelector(selectAllProjects);
   const [projectId, setProjectId] = useState<ProjectId | null>(null);
   const active = projectId ?? projects[0]?.id ?? null;
@@ -42,9 +41,7 @@ export function App() {
           </span>
         )}
         <div className="delivery-spacer" />
-        <button type="button" className="delivery-reset" onClick={() => dispatch(resetToSeed())}>
-          Reset to seed
-        </button>
+        <ResetToSeed />
       </div>
       {active === null ? (
         <p>No projects.</p>
